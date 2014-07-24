@@ -3,6 +3,7 @@ import re
 from eve import Eve
 from eve.auth import BasicAuth
 from flask import g, abort
+from datetime import datetime
 
 class BCryptAuth(BasicAuth):
     def check_auth(self, username, password, allowed_roles, resource, method):
@@ -17,10 +18,13 @@ class BCryptAuth(BasicAuth):
         else:
             auth_hash = bcrypt.hashpw(password, bcrypt.gensalt())
             self.set_request_auth_value(email)
+            dt = datetime.now()
             g.user = {
                 'name': name,
                 'email': email,
                 'auth_hash': auth_hash
+                eve.DATE_CREATED: dt,
+                eve.LAST_UPDATDE: dt
             }
             app.data.insert('users', g.user)
             return True

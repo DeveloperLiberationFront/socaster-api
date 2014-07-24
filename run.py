@@ -23,7 +23,7 @@ class BCryptAuth(BasicAuth):
             g.user = {
                 'name': name,
                 'email': email,
-                'auth_hash': auth_hash
+                'auth_hash': auth_hash,
                 eve.DATE_CREATED: dt,
                 eve.LAST_UPDATDE: dt
             }

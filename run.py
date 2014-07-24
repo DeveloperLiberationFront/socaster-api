@@ -25,7 +25,7 @@ class BCryptAuth(BasicAuth):
                 'email': email,
                 'auth_hash': auth_hash,
                 eve.DATE_CREATED: dt,
-                eve.LAST_UPDATDE: dt
+                eve.LAST_UPDATE: dt
             }
             app.data.insert('users', g.user)
             return True

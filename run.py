@@ -30,26 +30,48 @@ class BCryptAuth(BasicAuth):
             app.data.insert('users', g.user)
             return True
 
+def get_list_field(resource, name):
+    fields = app.config['DOMAIN'][resource].get(name, None)
+    if not fields: return []
+    if not isinstance(fields, list): fields = [fields]
+    return fields
+
 def restrict_access(resource, request, lookup):
-    field = app.config['DOMAIN'][resource].get('restrict_access', None)
-    if field:
-        #restrict results to only those the user is allowed to read
-        lookup['$or'] = [
+    fields = get_list_field(resource, 'restrict_read')
+    if not fields or 'admin' in g.user['roles']: return #admins can read anything
+    #restrict results to only those the user is allowed to read
+    lookup['$or'] = []
+    for field in fields:
+        lookup['$or'].extend([
             {field: {"$elemMatch": {"$in": [g.user['email'], 'public']}}},
             {field: {"$in": [g.user['email'], 'public']}}
-        ]
+        ])
 
-def restrict_update(resource, item, original):
-    field = app.config['DOMAIN'][resource].get('restrict_update', None)
-    print field
-    if field:
-        value = original[field]
-        if isinstance(value, list):
-            if g.user['email'] not in value:
-                abort(403)
-        else:
-            if g.user['email'] != value:
-                abort(403)
+def restrict_update(resource, item, original=None):
+    fields = get_list_field(resource, 'restrict_update')
+    if not fields or 'admin' in g.user['roles']: return #admins can update anything
+
+    found = False
+    for field in fields:
+        value = original and original[field] or item[field]
+        if (isinstance(value, list) and g.user['email'] in value) or g.user['email'] == value:
+            found = True
+
+    if not found: abort(403)
+
+def set_creator(resource, items):
+    fields = get_list_field(resource, 'creator')
+    if not fields: return
+    for field in fields:
+        for item in items:
+            item[field] = g.user['email']
+
+    print items
+
+def prevent_escalation(item, original=None):
+    if 'admin' not in g.user.get('roles', []):
+        abort(403, 'You do not have permission to set roles')
+        #item.pop('roles', None) #don't let non-admins set roles via api
 
 if __name__ == '__main__':
     app = Eve(auth=BCryptAuth)
@@ -58,4 +80,10 @@ if __name__ == '__main__':
     app.on_pre_GET += restrict_access
     app.on_replace += restrict_update
     app.on_update += restrict_update
+    app.on_delete_item += restrict_update
+    app.on_insert += set_creator
+
+    app.on_update_users += prevent_escalation
+    app.on_replace_users += prevent_escalation
+
     app.run()

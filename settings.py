@@ -1,3 +1,5 @@
+DEBUG=True
+
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 MONGO_USERNAME = 'eve'
@@ -15,9 +17,10 @@ users = {
         'url': 'regex("[\w@.+]+")',
         'field': 'email'
     },
+    'resource_methods': ['GET'],
     'embedding': True,
     'datasource': {
-        'projection': {'auth_hash': 0}
+        'projection': {'auth_hash': 0, 'roles': 0}
     },
     'restrict_update': 'email',
     'schema': {
@@ -26,6 +29,10 @@ users = {
             'type':'string',
             'unique': True,
             'required': True
+        },
+        'roles': {
+            'type':'list',
+            'items': [{'type': 'string', 'allowed': ['admin', 'user']}]
         },
         'auth_hash': { 'type': 'string' }
     }
@@ -54,13 +61,15 @@ tools = {
             'type': 'objectid',
             'data_relation': {
                 'resource': 'applications',
-                'field': '_id',
-            }
+                'field': 'name',
+            },
         }
     }
 }
 
 usages = {
+    'restrict_update':'user',
+    'creator': 'user',
     'schema': {
         'tool': {
             'type': 'objectid',
@@ -82,6 +91,9 @@ usages = {
 
 notifications = {
     'item_title': 'notification',
+    'restrict_update': ['recipient', 'sender'],
+    'restrict_read': ['recipient', 'sender'],
+    'creator': 'sender',
     'schema': {
         'recipient': {
             'type': 'string',
@@ -113,14 +125,13 @@ notifications = {
             }
         },
         'type': { 'type': 'string' },
-        'created': { 'type': 'integer' },
-        'updated': { 'type': 'integer' },
         'status': { 'type': 'string' }
     }
 }
 
 clips = {
-    'auth_field': 'user',
+    'restrict_update': 'user',
+    'creator': 'user',
     'schema': {
         'name': {'type': 'string'},
         'user': {
@@ -158,7 +169,8 @@ clips = {
 }
 
 ratings = {
-    'auth_field': 'user',
+    'restrict_update': 'user',
+    'creator': 'user',
     'schema': {
         'clip': {
             'type': 'objectid',
@@ -179,7 +191,8 @@ ratings = {
 }
 
 images = {
-    'auth_field': 'user',
+    'restrict_update': 'user',
+    'creator': 'user',
     'schema': {
         'name': {'type': 'string'},
         'clip': {

@@ -1,5 +1,6 @@
 import bcrypt
 import re
+import eve
 from eve import Eve
 from eve.auth import BasicAuth
 from flask import g, abort

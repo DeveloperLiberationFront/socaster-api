@@ -2,7 +2,10 @@ import requests
 import httplib
 import unittest
 import simplejson as json
-httplib.HTTPConnection.debuglevel = 1
+import logging
+from run import *
+logger = logging.getLogger()
+logger.addHandler(logging.StreamHandler())
 
 users = {
     'Test': {
@@ -57,7 +60,7 @@ def update_item(item, data, auth=None):
                    data=json.dumps(data),
                    auth=auth).json()
 
-def delete_item(item, data, auth=None):
+def delete_item(item, auth=None):
     return s.delete(url+item['_links']['self']['href'],
                     headers={"If-Match": item['_etag']},
                     auth=auth).json()
@@ -69,16 +72,28 @@ def replace_item(item, data, auth=None):
                  auth=auth).json()
 
 class TestBasicEndpoints(unittest.TestCase):
-    def runTest(self): pass
+    #pass so instance doesn't automatically run tests
+    def runTest(self): pass 
 
     @classmethod
     def setUpClass(cls):
+        #ensure 3 users
         get_collection('applications', auth=auth("Test"))
         get_collection('applications', auth=auth("Delete"))
         get_collection('applications', auth=auth("User1"))
     
-    def setUp(self):
-        print "\n\n"
+    def assert_success(self, result):
+        logger.debug(result)
+        self.assertIsNotNone(result)
+        self.assertIsNotNone(result['_status'])
+        self.assertEquals(result['_status'], 'OK')
+
+    def assert_failure(self, result, code=403):
+        logger.debug(result)
+        self.assertIsNotNone(result)
+        self.assertIsNotNone(result['_status'])
+        self.assertEquals(result['_status'], 'ERR')
+        self.assertEquals(result['_error']['code'], code)
 
     def test_applications(self):
         self.assertTrue(len(get_collection('applications')) > 0)
@@ -89,56 +104,36 @@ class TestBasicEndpoints(unittest.TestCase):
     def test_update_user(self):
         u = get_item('users', 'test@mailinator.com')
         result = update_item(u, {'name': 'Test User'})
-        print result
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'OK')
+        self.assert_success(result)
 
     def test_user_escalation(self):
         u = get_item('users', 'test@mailinator.com')
         result = update_item(u, {'roles': ['admin']})
-        print result
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'ERR')
-        self.assertEquals(result['_error']['code'], 403)
+        self.assert_failure(result)
 
     def test_admin_privileges(self):
         u = get_item('users', 'test@mailinator.com')
         result = update_item(u, {'roles': ['user']}, auth=auth('Admin'))
-        print result
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'OK')
+        self.assert_success(result)
 
     def test_update_other_user(self):
         u = get_item('users', users['User1']['email'])
         result = update_item(u, {'name': 'Test User'})
-        print result
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'ERR')
-        self.assertEquals(result['_error']['code'], 403)
+        self.assert_failure(result)
 
     def test_create_user(self):
         result = create_item('users', {'name': 'Test User', 'email': 'test2@mailinator.com'})
-        print result
         assert result.status_code == 405
 
     def test_delete_user(self):
-        u = get_item('users', 'test@mailinator.com')
-        result = delete_item(u, {'name': 'Test User'})
-        print result
+        u = get_item('users', users['Delete']['email'])
+        result = delete_item(u, auth=auth('Delete'))
         self.assertEquals(result, {})
 
     def test_delete_other_user(self):
-        u = get_item('users', users['Delete']['email'])
-        result = delete_item(u, {'name': 'Test User'})
-        print result
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'ERR')
-        self.assertEquals(result['_error']['code'], 403)
+        u = get_item('users', users['Test']['email'])
+        result = delete_item(u, auth=auth('Delete'))
+        self.assert_failure(result)
 
     def test_send_notification(self):
         tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
@@ -149,9 +144,7 @@ class TestBasicEndpoints(unittest.TestCase):
             'type': 'message',
             'status': 'new'
         })
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'OK')
+        self.assert_success(result)
 
     def test_update_notification(self):
         notes = get_collection('notifications')['_items']
@@ -160,9 +153,7 @@ class TestBasicEndpoints(unittest.TestCase):
         result = update_item(note, {
             'status': 'updated'
         })
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'OK')
+        self.assert_success(result)
 
     def test_update_other_notification(self):
         notes = get_collection('notifications')['_items']
@@ -171,14 +162,54 @@ class TestBasicEndpoints(unittest.TestCase):
         result = update_item(note, {
             'status': 'tampered'
         }, auth('Delete'))
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(result['_status'])
-        self.assertEquals(result['_status'], 'ERR')
-        self.assertEquals(result['_error']['code'], 403)
+        self.assert_failure(result)
 
-    
+    def test_create_public_clip(self):
+        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        result = create_item('clips', {
+            'name': 'TestClip',
+            'tool': tool['_id'],
+            'share': ['public'],
+            'type': 'keyboard',
+        })
+        self.assert_success(result)
 
-test = TestBasicEndpoints()            
+    def test_create_clip_bad_share(self):
+        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        result = create_item('clips', {
+            'name': 'TestClip',
+            'tool': tool['_id'],
+            'share': ['blah'],
+            'type': 'keyboard',
+        })
+        self.assert_failure(result, code=400)
+
+    def test_create_clip_share_user(self):
+        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        result = create_item('clips', {
+            'name': 'TestClip',
+            'tool': tool['_id'],
+            'share': [users['User1']['email']],
+            'type': 'keyboard',
+        })
+        self.assert_success(result)
+
+    # def test_set_rating(self):
+    #     tool = get_collection('clips?where={"application":"Eclipse"}')['_items'][0]
+    #     result = create_item('notifications', {
+    #         'recipient':'user1@mailinator.com', 
+    #         'message': 'Test Message',
+    #         'application': "Eclipse",
+    #         'type': 'message',
+    #         'status': 'new'
+    #     })
+    #     self.assert_success(result)
+
+test = TestBasicEndpoints() #useful for manual testing
 
 if __name__ == '__main__':
+    logger.setLevel(logging.ERROR)
     unittest.main()
+else:
+    httplib.HTTPConnection.debuglevel = 1
+    logger.setLevel(logging.DEBUG)

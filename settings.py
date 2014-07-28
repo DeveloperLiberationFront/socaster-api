@@ -130,8 +130,8 @@ notifications = {
 }
 
 clips = {
-    'restrict_update': 'user',
-    'creator': 'user',
+    'creator': 'user', #store the creating user's email in the 'user' field
+    'restrict_update': 'user', #only the creator can update/delete the clip
     'schema': {
         'name': {'type': 'string'},
         'user': {
@@ -150,20 +150,36 @@ clips = {
         },
         'share': {
             'type': 'list',
+            'schema': {
+                'type': 'string',
+                'or': [{
+                    'data_relation': {
+                        'resource': 'users',
+                        'field': 'email'
+                    },
+                }, {
+                    'allowed': ['public']
+                }]
+            }
+        },
+        'type': {
+            'type': 'string',
+            'allowed': ['mouse', 'keyboard']
+        },
+        'frames': {
+            'type': 'list',
             'items': [{
-                'type': 'string',
+                'type': 'objectid',
                 'data_relation': {
-                    'resource': 'users',
-                    'field': 'email'
+                    'resource': 'images',
+                    'field': '_id'
                 },
-            }, {
-                'type': 'string',
-                'allowed': ['public']
-            }]
+            }],
         },
         'event_frames': {
             'type': 'list',
-            'items': [{'type': 'integer'}]
+            'items': [{'type': 'integer'}],
+            'default': [25]
         },
     }
 }
@@ -195,13 +211,6 @@ images = {
     'creator': 'user',
     'schema': {
         'name': {'type': 'string'},
-        'clip': {
-            'type': 'objectid',
-            'data_relation': {
-                'resource': 'clips',
-                'field': '_id',
-            }
-        },
         'data': {'type': 'media'}
     }
 }

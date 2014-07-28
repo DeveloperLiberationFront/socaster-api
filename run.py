@@ -5,6 +5,7 @@ from eve import Eve
 from eve.auth import BasicAuth
 from flask import g, abort
 from datetime import datetime
+from validator import Validator
 
 class BCryptAuth(BasicAuth):
     def check_auth(self, username, password, allowed_roles, resource, method):
@@ -24,6 +25,7 @@ class BCryptAuth(BasicAuth):
                 'name': name,
                 'email': email,
                 'auth_hash': auth_hash,
+                'roles': ['user'],
                 eve.DATE_CREATED: dt,
                 eve.LAST_UPDATED: dt
             }
@@ -38,9 +40,10 @@ def get_list_field(resource, name):
 
 def restrict_access(resource, request, lookup):
     fields = get_list_field(resource, 'restrict_read')
+    public = app.config['DOMAIN'][resource].get('public', None)
     if not fields or 'admin' in g.user['roles']: return #admins can read anything
     #restrict results to only those the user is allowed to read
-    lookup['$or'] = []
+    lookup['$or'] = [{public: 'public'}] if public else []
     for field in fields:
         lookup['$or'].extend([
             {field: {"$elemMatch": {"$in": [g.user['email'], 'public']}}},
@@ -53,7 +56,7 @@ def restrict_update(resource, item, original=None):
 
     found = False
     for field in fields:
-        value = original and original[field] or item[field]
+        value = original[field] if original else item[field]
         if (isinstance(value, list) and g.user['email'] in value) or g.user['email'] == value:
             found = True
 
@@ -69,12 +72,11 @@ def set_creator(resource, items):
     print items
 
 def prevent_escalation(item, original=None):
-    if 'admin' not in g.user.get('roles', []):
+    if 'roles' in item and 'admin' not in g.user.get('roles', []):
         abort(403, 'You do not have permission to set roles')
-        #item.pop('roles', None) #don't let non-admins set roles via api
 
 if __name__ == '__main__':
-    app = Eve(auth=BCryptAuth)
+    app = Eve(auth=BCryptAuth, validator=Validator)
     app.debug = True
 
     app.on_pre_GET += restrict_access

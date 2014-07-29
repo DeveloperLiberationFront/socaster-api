@@ -6,7 +6,7 @@ MONGO_USERNAME = 'eve'
 MONGO_PASSWORD = 'api service access'
 MONGO_DBNAME = 'socaster'
 
-RESOURCE_METHODS = ['GET', 'POST']
+RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
 EMBEDDING = True
@@ -187,13 +187,14 @@ clips = {
 ratings = {
     'restrict_update': 'user',
     'creator': 'user',
+    'unique': ['user', 'clip'],
     'schema': {
         'clip': {
             'type': 'objectid',
             'data_relation': {
                 'resource': 'clips',
                 'field': '_id',
-            }
+            },
         },
         'user': {
             'type': 'string',

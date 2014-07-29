@@ -43,8 +43,9 @@ s = requests.Session()
 s.headers.update({'Content-Type': 'application/json'})
 s.auth = auth("Test")
 
-def get_collection(col, auth=None):
-    return s.get(url+'/'+col, auth=auth).json().get('_items', [])
+def get_collection(col, where=None, auth=None):
+    data=json.dumps({'where': where}) if where else None
+    return s.get(url+'/'+col, data=data, auth=auth).json().get('_items', [])
 
 def delete_collection(col, filter=None, auth=None):
     return s.delete(url+'/'+col,
@@ -52,7 +53,7 @@ def delete_collection(col, filter=None, auth=None):
                     auth=auth).json()
 
 def get_item(col, id):
-    return s.get(url+'/'+col+'/'+id).json()
+    return s.get(url + '/' + col + '/' + id).json()
 
 def create_item(collection, data, auth=None):
     result = s.post(url+'/'+collection,
@@ -90,6 +91,17 @@ def replace_item(item, data, auth=None):
                  data=json.dumps(data),
                  auth=auth).json()
 
+def ensure_users(*users):
+    for user in users:
+        get_collection('applications', auth=auth(user))
+
+def ensure_tools(*tools):
+    for tool in tools:
+        #check for errors
+        if len(get_collection('tools', where={'name': tool['name']})):
+            #create tool
+            create_item('tools', tool)
+
 class TestBasicEndpoints(unittest.TestCase):
     #pass so instance doesn't automatically run tests
     def runTest(self): pass 
@@ -97,9 +109,7 @@ class TestBasicEndpoints(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         #ensure 3 users
-        get_collection('applications', auth=auth("Test"))
-        get_collection('applications', auth=auth("Delete"))
-        get_collection('applications', auth=auth("User1"))
+        ensure_users("Test", "Delete", "User1")
 
     def assert_success(self, result):
         logger.debug(result)
@@ -155,7 +165,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_send_notification(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('notifications', {
             'recipient':'user1@mailinator.com', 
             'message': 'Test Message',
@@ -184,7 +194,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_create_public_clip(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -194,7 +204,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_create_clip_bad_share(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -204,7 +214,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result, code=400)
 
     def test_create_clip_share_user(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+               tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -222,16 +232,14 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_update_rating(self):
-        rating = get_collection('ratings?where={"user":"%s"}' %
-                                email('Test'))[0]
+        rating = get_collection('ratings', where={"user": email('Test')})[0]
         result = update_item(rating, {
             'value': 3
         })
         self.assert_success(result)
 
     def test_new_duplicate_rating(self):
-        rating = get_collection('ratings?where={"user":"%s"}' %
-                                email('Test'))[0]
+        rating = get_collection('ratings', where={"user": email('Test')})[0]
         result = create_item('ratings', {
             'clip': rating['clip'],
             'value': 4
@@ -239,8 +247,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result, 400)
 
     def test_new_duplicate_rating_other_user(self):
-        rating = get_collection('ratings?where={"user":{"$ne": "%s"}}' %
-                                email('User1'))[0]
+        rating = get_collection('ratings', where={"user":{"$ne": email('User1')}})[0]
         result = create_item('ratings', {
             'clip': rating['clip'],
             'value': 4
@@ -256,7 +263,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_upload_image(self):
-        clip = get_collection('clips?where={"user": "%s"}' % email('Test'))[0]
+        clip = get_collection('clips', where={"user": email('Test')})[0]
         response = requests.post(url+'/clips/%s/images' % clip['_id'],
                                files={"data": open("frame000.jpg", 'rb')},
                                data={'name': 'TestFrame'},
@@ -264,15 +271,14 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_create_usage(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('usages', {
             'tool': tool['_id'],
         })
         self.assert_success(result)
     
     def test_update_usage(self):
-        usage = get_collection('usages?where={"user":"%s"}' %
-                                email('Test'))[0]
+        usage = get_collection('usages', where={"user": email('Test')})[0]
         result = update_item(usage, {
             'keyboard': 3
         })
@@ -280,7 +286,7 @@ class TestBasicEndpoints(unittest.TestCase):
 
     # Doesn't seem to work...
     # def test_admin_delete_filtered_collection(self):
-    #     result = delete_collection('ratings?where={"user": "%s"}' % email('Test'),
+    #     result = delete_collection('ratings', where={"user": email('Test')},
     #                                auth=auth('Admin'))
     #     self.assertEquals(result, {})
 

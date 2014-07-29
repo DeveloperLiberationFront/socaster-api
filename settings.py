@@ -7,6 +7,7 @@ MONGO_PASSWORD = 'api service access'
 MONGO_DBNAME = 'socaster'
 
 X_DOMAINS = "*"
+X_HEADERS = ['Authorization']
 
 RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
@@ -88,7 +89,8 @@ usages = {
                 'field': 'email',
             }
         },
-        'details': {'type': 'dict'}
+        'keyboard': {'type': 'integer'},
+        'mouse': {'type': 'integer'}
     }
 }
 

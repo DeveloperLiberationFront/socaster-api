@@ -44,8 +44,7 @@ s.headers.update({'Content-Type': 'application/json'})
 s.auth = auth("Test")
 
 def get_collection(col, auth=None):
-    
-    return s.get(url+'/'+col, auth=auth).json()
+    return s.get(url+'/'+col, auth=auth).json().get('_items', [])
 
 def delete_collection(col, filter=None, auth=None):
     return s.delete(url+'/'+col,
@@ -156,7 +155,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_send_notification(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
         result = create_item('notifications', {
             'recipient':'user1@mailinator.com', 
             'message': 'Test Message',
@@ -167,7 +166,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_update_notification(self):
-        notes = get_collection('notifications')['_items']
+        notes = get_collection('notifications')
         self.assertGreater(len(notes), 0)
         note = notes[0]
         result = update_item(note, {
@@ -176,7 +175,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_update_other_notification(self):
-        notes = get_collection('notifications')['_items']
+        notes = get_collection('notifications')
         self.assertGreater(len(notes), 0)
         note = notes[0]
         result = update_item(note, {
@@ -185,7 +184,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_create_public_clip(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -195,7 +194,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_create_clip_bad_share(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -205,7 +204,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result, code=400)
 
     def test_create_clip_share_user(self):
-        tool = get_collection('tools?where={"application":"Eclipse"}')['_items'][0]
+        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
@@ -215,7 +214,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_new_rating(self):
-        clip = get_collection('clips')['_items'][0]
+        clip = get_collection('clips')[0]
         result = create_item('ratings', {
             'clip': clip['_id'],
             'value': 3
@@ -224,7 +223,7 @@ class TestBasicEndpoints(unittest.TestCase):
 
     def test_update_rating(self):
         rating = get_collection('ratings?where={"user":"%s"}' %
-                                email('Test'))['_items'][0]
+                                email('Test'))[0]
         result = update_item(rating, {
             'value': 3
         })
@@ -232,7 +231,7 @@ class TestBasicEndpoints(unittest.TestCase):
 
     def test_new_duplicate_rating(self):
         rating = get_collection('ratings?where={"user":"%s"}' %
-                                email('Test'))['_items'][0]
+                                email('Test'))[0]
         result = create_item('ratings', {
             'clip': rating['clip'],
             'value': 4
@@ -241,7 +240,7 @@ class TestBasicEndpoints(unittest.TestCase):
 
     def test_new_duplicate_rating_other_user(self):
         rating = get_collection('ratings?where={"user":{"$ne": "%s"}}' %
-                                email('User1'))['_items'][0]
+                                email('User1'))[0]
         result = create_item('ratings', {
             'clip': rating['clip'],
             'value': 4
@@ -257,11 +256,26 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result)
 
     def test_upload_image(self):
-        clip = get_collection('clips?where={"user": "%s"}' % email('Test'))['_items'][0]
+        clip = get_collection('clips?where={"user": "%s"}' % email('Test'))[0]
         response = requests.post(url+'/clips/%s/images' % clip['_id'],
                                files={"data": open("frame000.jpg", 'rb')},
                                data={'name': 'TestFrame'},
                                auth=auth('Test'))
+        self.assert_success(result)
+
+    def test_create_usage(self):
+        tool = get_collection('tools?where={"application":"Eclipse"}')[0]
+        result = create_item('usages', {
+            'tool': tool['_id'],
+        })
+        self.assert_success(result)
+    
+    def test_update_usage(self):
+        usage = get_collection('usages?where={"user":"%s"}' %
+                                email('Test'))[0]
+        result = update_item(usage, {
+            'keyboard': 3
+        })
         self.assert_success(result)
 
     # Doesn't seem to work...

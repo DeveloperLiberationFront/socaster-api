@@ -70,6 +70,7 @@ tools = {
 usages = {
     'restrict_update':'user',
     'creator': 'user',
+    'unique': ['tool', 'user'],
     'schema': {
         'tool': {
             'type': 'objectid',

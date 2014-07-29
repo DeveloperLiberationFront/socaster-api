@@ -6,6 +6,8 @@ MONGO_USERNAME = 'eve'
 MONGO_PASSWORD = 'api service access'
 MONGO_DBNAME = 'socaster'
 
+X_DOMAINS = "*"
+
 RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 

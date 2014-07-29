@@ -61,7 +61,7 @@ tools = {
     'schema': {
         'name': {'type': 'string'},
         'application': {
-            'type': 'objectid',
+            'type': 'string',
             'data_relation': {
                 'resource': 'applications',
                 'field': 'name',

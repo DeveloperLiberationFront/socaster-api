@@ -79,6 +79,16 @@ def require_admin(*args):
     if 'admin' not in g.user['roles']:
         abort(403, 'This action requires admin privileges')
 
+def multi_unique(resource, items, original=None):
+    fields = get_list_field(resource, 'unique')
+    for item in items:
+        print item
+        query = {'_id': {'$ne': item['_id']}} if item.has_key('_id') else {}
+        for field in fields:
+            query[field] = item[field]
+        if app.data.find_one(resource, None, **query):
+            abort(400, 'These fields must be unique: %s' % fields)
+
 if __name__ == '__main__':
     app = Eve(auth=BCryptAuth, validator=Validator)
     app.debug = True
@@ -90,6 +100,9 @@ if __name__ == '__main__':
     app.on_update += restrict_update
     app.on_delete_item += restrict_update
     app.on_insert += set_creator
+
+    app.on_update += multi_unique
+    app.on_insert += multi_unique
 
     app.on_update_users += prevent_escalation
     app.on_replace_users += prevent_escalation

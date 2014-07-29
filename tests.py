@@ -95,12 +95,13 @@ def ensure_users(*users):
     for user in users:
         get_collection('applications', auth=auth(user))
 
+def ensure_item(col, item):
+    if len(get_collection(col, where=item)) == 0:
+        return create_item(col, item)
+
 def ensure_tools(*tools):
     for tool in tools:
-        #check for errors
-        if len(get_collection('tools', where={'name': tool['name']})):
-            #create tool
-            create_item('tools', tool)
+        print ensure_item('tools', tool)
 
 class TestBasicEndpoints(unittest.TestCase):
     #pass so instance doesn't automatically run tests
@@ -214,7 +215,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_failure(result, code=400)
 
     def test_create_clip_share_user(self):
-               tool = get_collection('tools', where={"application":"Eclipse"})[0]
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],

@@ -3,6 +3,7 @@ import httplib
 import unittest
 import simplejson as json
 import logging
+import random
 from run import *
 logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler())
@@ -33,6 +34,9 @@ users = {
 def auth(user):
     return requests.auth.HTTPBasicAuth("{email}|{name}".format(**users[user]), users[user]['token'])
 
+def email(user):
+    return users[user]['email']
+
 #url = 'http://recommender.oscar.ncsu.edu/api/v2/'
 url = 'http://localhost:5000'
 s = requests.Session()
@@ -43,12 +47,18 @@ def get_collection(col, auth=None):
     
     return s.get(url+'/'+col, auth=auth).json()
 
+def delete_collection(col, filter=None, auth=None):
+    return s.delete(url+'/'+col,
+                    params={'where': json.dumps(filter)} if filter else {},
+                    auth=auth).json()
+
 def get_item(col, id):
     return s.get(url+'/'+col+'/'+id).json()
 
-def create_item(collection, data):
+def create_item(collection, data, auth=None):
     result = s.post(url+'/'+collection,
-                    data=json.dumps(data))
+                    data=json.dumps(data),
+                    auth=auth)
     try:
         return result.json()
     except Exception:
@@ -81,7 +91,7 @@ class TestBasicEndpoints(unittest.TestCase):
         get_collection('applications', auth=auth("Test"))
         get_collection('applications', auth=auth("Delete"))
         get_collection('applications', auth=auth("User1"))
-    
+
     def assert_success(self, result):
         logger.debug(result)
         self.assertIsNotNone(result)
@@ -117,7 +127,7 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     def test_update_other_user(self):
-        u = get_item('users', users['User1']['email'])
+        u = get_item('users', email('User1'))
         result = update_item(u, {'name': 'Test User'})
         self.assert_failure(result)
 
@@ -126,12 +136,12 @@ class TestBasicEndpoints(unittest.TestCase):
         assert result.status_code == 405
 
     def test_delete_user(self):
-        u = get_item('users', users['Delete']['email'])
+        u = get_item('users', email('Delete'))
         result = delete_item(u, auth=auth('Delete'))
         self.assertEquals(result, {})
 
     def test_delete_other_user(self):
-        u = get_item('users', users['Test']['email'])
+        u = get_item('users', email('Test'))
         result = delete_item(u, auth=auth('Delete'))
         self.assert_failure(result)
 
@@ -189,21 +199,58 @@ class TestBasicEndpoints(unittest.TestCase):
         result = create_item('clips', {
             'name': 'TestClip',
             'tool': tool['_id'],
-            'share': [users['User1']['email']],
+            'share': [email('User1')],
             'type': 'keyboard',
         })
         self.assert_success(result)
 
-    # def test_set_rating(self):
-    #     tool = get_collection('clips?where={"application":"Eclipse"}')['_items'][0]
-    #     result = create_item('notifications', {
-    #         'recipient':'user1@mailinator.com', 
-    #         'message': 'Test Message',
-    #         'application': "Eclipse",
-    #         'type': 'message',
-    #         'status': 'new'
-    #     })
-    #     self.assert_success(result)
+    def test_new_rating(self):
+        clip = get_collection('clips')['_items'][0]
+        result = create_item('ratings', {
+            'clip': clip['_id'],
+            'value': 3
+        })
+        self.assert_success(result)
+
+    def test_update_rating(self):
+        rating = get_collection('ratings?where={"user":"%s"}' %
+                                email('Test'))['_items'][0]
+        result = update_item(rating, {
+            'value': 3
+        })
+        self.assert_success(result)
+
+    def test_new_duplicate_rating(self):
+        rating = get_collection('ratings?where={"user":"%s"}' %
+                                email('Test'))['_items'][0]
+        result = create_item('ratings', {
+            'clip': rating['clip'],
+            'value': 4
+        })
+        self.assert_failure(result, 400)
+
+    def test_new_duplicate_rating_other_user(self):
+        rating = get_collection('ratings?where={"user":{"$ne": "%s"}}' %
+                                email('User1'))['_items'][0]
+        result = create_item('ratings', {
+            'clip': rating['clip'],
+            'value': 4
+        }, auth=auth('User1'))
+        self.assert_success(result)
+
+    def test_admin_delete_collection(self):
+        result = delete_collection('ratings', auth=auth('Admin'))
+        self.assertEquals(result, {})
+
+    def test_user_delete_collection(self):
+        result = delete_collection('ratings')
+        self.assert_failure(result)
+
+    # Doesn't seem to work...
+    # def test_admin_delete_filtered_collection(self):
+    #     result = delete_collection('ratings?where={"user": "%s"}' % email('Test'),
+    #                                auth=auth('Admin'))
+    #     self.assertEquals(result, {})
 
 test = TestBasicEndpoints() #useful for manual testing
 

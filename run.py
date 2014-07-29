@@ -75,9 +75,15 @@ def prevent_escalation(item, original=None):
     if 'roles' in item and 'admin' not in g.user.get('roles', []):
         abort(403, 'You do not have permission to set roles')
 
+def require_admin(*args):
+    if 'admin' not in g.user['roles']:
+        abort(403, 'This action requires admin privileges')
+
 if __name__ == '__main__':
     app = Eve(auth=BCryptAuth, validator=Validator)
     app.debug = True
+
+    app.on_delete_resource += require_admin
 
     app.on_pre_GET += restrict_access
     app.on_replace += restrict_update

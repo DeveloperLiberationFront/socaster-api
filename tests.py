@@ -64,6 +64,16 @@ def create_item(collection, data, auth=None):
     except Exception:
         return result
 
+def upload_item(collection, files, auth=None):
+    result = s.post(url+'/'+collection,
+                    files=files,
+                    headers={'Content-Type': 'multipart/form-data'},
+                    auth=auth)
+    try:
+        return result.json()
+    except Exception:
+        return result
+
 def update_item(item, data, auth=None):
     return s.patch(url+item['_links']['self']['href'],
                    headers={"If-Match": item['_etag']},
@@ -245,6 +255,14 @@ class TestBasicEndpoints(unittest.TestCase):
     def test_user_delete_collection(self):
         result = delete_collection('ratings')
         self.assert_failure(result)
+
+    def test_upload_image(self):
+        clip = get_collection('clips?where={"user": "%s"}' % email('Test'))['_items'][0]
+        response = requests.post(url+'/clips/%s/images' % clip['_id'],
+                               files={"data": open("frame000.jpg", 'rb')},
+                               data={'name': 'TestFrame'},
+                               auth=auth('Test'))
+        self.assert_success(result)
 
     # Doesn't seem to work...
     # def test_admin_delete_filtered_collection(self):

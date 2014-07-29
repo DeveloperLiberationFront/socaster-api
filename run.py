@@ -3,6 +3,7 @@ import re
 import eve
 from eve import Eve
 from eve.auth import BasicAuth
+from eve.utils import parse_request
 from flask import g, abort
 from datetime import datetime
 from validator import Validator
@@ -69,8 +70,6 @@ def set_creator(resource, items):
         for item in items:
             item[field] = g.user['email']
 
-    print items
-
 def prevent_escalation(item, original=None):
     if 'roles' in item and 'admin' not in g.user.get('roles', []):
         abort(403, 'You do not have permission to set roles')
@@ -81,13 +80,18 @@ def require_admin(*args):
 
 def multi_unique(resource, items, original=None):
     fields = get_list_field(resource, 'unique')
+    if not fields: return
     for item in items:
-        print item
         query = {'_id': {'$ne': item['_id']}} if item.has_key('_id') else {}
         for field in fields:
             query[field] = item[field]
         if app.data.find_one(resource, None, **query):
             abort(400, 'These fields must be unique: %s' % fields)
+
+def restrict_image_access(request, lookup):
+    clip = app.data.find_one_raw('clips', lookup['clip'])
+    if clip and g.user['email'] not in clip['share'].append(clip['user']) and 'public' not in clip['share']:
+        abort(403, "You do not have access to the frames for this clip")
 
 if __name__ == '__main__':
     app = Eve(auth=BCryptAuth, validator=Validator)
@@ -106,5 +110,7 @@ if __name__ == '__main__':
 
     app.on_update_users += prevent_escalation
     app.on_replace_users += prevent_escalation
+
+    app.on_pre_GET_images += restrict_image_access
 
     app.run()

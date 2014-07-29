@@ -166,16 +166,6 @@ clips = {
             'type': 'string',
             'allowed': ['mouse', 'keyboard']
         },
-        'frames': {
-            'type': 'list',
-            'items': [{
-                'type': 'objectid',
-                'data_relation': {
-                    'resource': 'images',
-                    'field': '_id'
-                },
-            }],
-        },
         'event_frames': {
             'type': 'list',
             'items': [{'type': 'integer'}],
@@ -208,11 +198,30 @@ ratings = {
 }
 
 images = {
+    'url': 'clips/<regex("[a-f0-9]{24}"):clip>/images',
+    'additional_lookup': {
+        'url': 'regex("[\w@.+]+")',
+        'field': 'name'
+    },
     'restrict_update': 'user',
     'creator': 'user',
     'schema': {
         'name': {'type': 'string'},
-        'data': {'type': 'media'}
+        'data': {'type': 'media'},
+        'clip': {
+            'type': 'objectid',
+            'data_relation': {
+                'resource': 'clips',
+                'field': '_id',
+            },
+        },
+        'user': {
+            'type': 'string',
+            'data_relation': {
+                'resource': 'users',
+                'field': 'email',
+            }
+        },
     }
 }
 

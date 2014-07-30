@@ -8,6 +8,10 @@ from flask import g, abort
 from datetime import datetime
 from validator import Validator
 
+from tornado.wsgi import WSGIContainer
+from tornado.ioloop import IOLoop
+from tornado.httpserver import HTTPServer
+
 class BCryptAuth(BasicAuth):
     def check_auth(self, username, password, allowed_roles, resource, method):
         # use Eve's own db driver; no additional connections/resources are used
@@ -41,8 +45,9 @@ def get_list_field(resource, name):
 
 def restrict_access(resource, request, lookup):
     fields = get_list_field(resource, 'restrict_read')
-    public = app.config['DOMAIN'][resource].get('public', None)
     if not fields or 'admin' in g.user['roles']: return #admins can read anything
+    public = app.config['DOMAIN'][resource].get('public', None)
+
     #restrict results to only those the user is allowed to read
     lookup['$or'] = [{public: 'public'}] if public else []
     for field in fields:
@@ -113,4 +118,6 @@ if __name__ == '__main__':
 
     app.on_pre_GET_images += restrict_image_access
 
-    app.run()
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.listen(5000)
+    IOLoop.instance().start()

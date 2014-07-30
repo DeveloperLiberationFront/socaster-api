@@ -89,8 +89,14 @@ usages = {
                 'field': 'email',
             }
         },
-        'keyboard': {'type': 'integer'},
-        'mouse': {'type': 'integer'}
+        'keyboard': {
+            'type': 'integer',
+            'default': 0
+        },
+        'mouse': {
+            'type': 'integer',
+            'default': 0
+        }
     }
 }
 

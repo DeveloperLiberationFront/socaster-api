@@ -7,7 +7,7 @@ MONGO_PASSWORD = 'api service access'
 MONGO_DBNAME = 'socaster'
 
 X_DOMAINS = "*"
-X_HEADERS = ['Authorization']
+X_HEADERS = ['Authorization', 'Content-Type']
 
 RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']

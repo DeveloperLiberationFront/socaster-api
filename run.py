@@ -72,8 +72,7 @@ def multi_unique(resource, items, original=None):
             abort(400, 'These fields must be unique: %s' % fields)
 
 def restrict_image_access(request, lookup):
-    print request.args
-    clip = app.data.find_one_raw('clips', lookup['clip'])
+    clip = app.data.find_one_raw('clips', request.view_args['clip'])
     if clip and g.user['email'] not in clip['share'].append(clip['user']) and 'public' not in clip['share']:
         abort(403, "You do not have access to the frames for this clip")
 

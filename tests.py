@@ -37,19 +37,19 @@ def auth(user):
 def email(user):
     return users[user]['email']
 
-#url = 'http://recommender.oscar.ncsu.edu/api/v2/'
+#url = 'http://recommender.oscar.ncsu.edu/api/v2'
 url = 'http://localhost:5000'
 s = requests.Session()
 s.headers.update({'Content-Type': 'application/json'})
 s.auth = auth("Test")
 
 def get_collection(col, where=None, auth=None):
-    data=json.dumps({'where': where}) if where else None
-    return s.get(url+'/'+col, data=data, auth=auth).json().get('_items', [])
+    params={'where': json.dumps(where)} if where else None
+    return s.get(url+'/'+col, params=params, auth=auth).json().get('_items', [])
 
-def delete_collection(col, filter=None, auth=None):
+def delete_collection(col, where=None, auth=None):
     return s.delete(url+'/'+col,
-                    params={'where': json.dumps(filter)} if filter else {},
+                    params={'where': json.dumps(where)} if where else {},
                     auth=auth).json()
 
 def get_item(col, id):
@@ -95,13 +95,16 @@ def ensure_users(*users):
     for user in users:
         get_collection('applications', auth=auth(user))
 
-def ensure_item(col, item):
-    if len(get_collection(col, where=item)) == 0:
-        return create_item(col, item)
+def ensure_item(col, item, auth=None):
+    items = get_collection(col, where=item)
+    if len(items) == 0:
+        return create_item(col, item, auth=auth)
+    return items[0]
 
-def ensure_tools(*tools):
-    for tool in tools:
-        print ensure_item('tools', tool)
+def ensure_items(col, *items, **kwargs):
+    auth = kwargs.get('auth')
+    return map(lambda item: ensure_item(col, item, auth=auth),
+               items)
 
 class TestBasicEndpoints(unittest.TestCase):
     #pass so instance doesn't automatically run tests
@@ -111,15 +114,27 @@ class TestBasicEndpoints(unittest.TestCase):
     def setUpClass(cls):
         #ensure 3 users
         ensure_users("Test", "Delete", "User1")
+        tools = ensure_items('tools', {'name': 'Save', 'application': 'Eclipse'})
+        usages = ensure_items('usages', {'tool': tools[0]['_id'], 'keyboard': 5})
+        clips = ensure_items('clips', {
+            'name': 'TestClip', 
+            'tool': tools[0]['_id'],
+            'share': ['public'],
+        })
+        print ensure_items('ratings', {
+            'clip': clips[0]['_id'], 'value': 3, 'user': email('Test')
+        })
+        print ensure_items('ratings', {'clip': clips[0]['_id'], 'value': 3, 'user': email('User1')},
+                     auth=auth('User1'))
 
     def assert_success(self, result):
-        logger.debug(result)
+        print result
         self.assertIsNotNone(result)
         self.assertIsNotNone(result['_status'])
         self.assertEquals(result['_status'], 'OK')
 
     def assert_failure(self, result, code=403):
-        logger.debug(result)
+        print result
         self.assertIsNotNone(result)
         self.assertIsNotNone(result['_status'])
         self.assertEquals(result['_status'], 'ERR')
@@ -265,11 +280,11 @@ class TestBasicEndpoints(unittest.TestCase):
 
     def test_upload_image(self):
         clip = get_collection('clips', where={"user": email('Test')})[0]
-        response = requests.post(url+'/clips/%s/images' % clip['_id'],
+        result = requests.post(url+'/clips/%s/images' % clip['_id'],
                                files={"data": open("frame000.jpg", 'rb')},
                                data={'name': 'TestFrame'},
                                auth=auth('Test'))
-        self.assert_success(result)
+        self.assertEqual(result.status_code, 201)
 
     def test_create_usage(self):
         tool = get_collection('tools', where={"application":"Eclipse"})[0]
@@ -286,10 +301,23 @@ class TestBasicEndpoints(unittest.TestCase):
         self.assert_success(result)
 
     # Doesn't seem to work...
-    # def test_admin_delete_filtered_collection(self):
-    #     result = delete_collection('ratings', where={"user": email('Test')},
-    #                                auth=auth('Admin'))
-    #     self.assertEquals(result, {})
+    def test_admin_delete_filtered_collection(self):
+        result = delete_collection('ratings', where={"user": email('Test')},
+                                   auth=auth('Admin'))
+        self.assertEquals(result, {})
+
+    def test_bulk_usage(self):
+        usages = [{
+            'app_name': 'Eclipse',
+            'tool_name': 'Save',
+            'keyboard': 5,
+        }, {
+            'app_name': 'Excel',
+            'tool_name': 'SUM',
+            'keyboard': 3,
+        }]
+        response = s.post(url+'/report-usage', data=json.dumps(usages))
+        print response
 
 test = TestBasicEndpoints() #useful for manual testing
 

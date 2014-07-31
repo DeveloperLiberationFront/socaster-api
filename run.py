@@ -1,40 +1,17 @@
-import bcrypt
-import re
-import eve
+import eve, simplejson as json
 from eve import Eve
-from eve.auth import BasicAuth
-from flask import g, abort
+from flask import g, abort, request, response
 from datetime import datetime
-from validator import Validator
+from eve.auth import requires_auth
 
 from tornado.wsgi import WSGIContainer
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
 
-class BCryptAuth(BasicAuth):
-    def check_auth(self, username, password, allowed_roles, resource, method):
-        # use Eve's own db driver; no additional connections/resources are used
-        users = app.data.driver.db['users']
-        email, name = re.match("([^\|]*)\|?([^\|]*)", username).groups() #match email|name
-        user = users.find_one({'email': email})
-        if user:
-            g.user = user
-            self.set_request_auth_value(email)
-            return bcrypt.hashpw(password, user['auth_hash']) == user['auth_hash']
-        else:
-            auth_hash = bcrypt.hashpw(password, bcrypt.gensalt())
-            self.set_request_auth_value(email)
-            dt = datetime.now()
-            g.user = {
-                'name': name,
-                'email': email,
-                'auth_hash': auth_hash,
-                'roles': ['user'],
-                eve.DATE_CREATED: dt,
-                eve.LAST_UPDATED: dt
-            }
-            app.data.insert('users', g.user)
-            return True
+from validator import Validator
+from auth import SocasterAuth
+
+app = Eve(auth=SocasterAuth, validator=Validator)
 
 def get_list_field(resource, name):
     fields = app.config['DOMAIN'][resource].get(name, None)
@@ -79,6 +56,7 @@ def prevent_escalation(item, original=None):
         abort(403, 'You do not have permission to set roles')
 
 def require_admin(*args):
+    print args
     if 'admin' not in g.user['roles']:
         abort(403, 'This action requires admin privileges')
 
@@ -94,12 +72,50 @@ def multi_unique(resource, items, original=None):
             abort(400, 'These fields must be unique: %s' % fields)
 
 def restrict_image_access(request, lookup):
+    print request.args
     clip = app.data.find_one_raw('clips', lookup['clip'])
     if clip and g.user['email'] not in clip['share'].append(clip['user']) and 'public' not in clip['share']:
         abort(403, "You do not have access to the frames for this clip")
 
+@app.route('/report-usage', methods=['POST'])
+def record_bulk_usage():
+    if not app.auth.authorized([], '', request.method):
+        return app.authenticate()
+
+    db = app.data.driver.db
+    #usages: [{app_name: str, tool_name: str, keyboard: int, mouse: int}]
+    usages = request.get_json()
+    apps = set()
+    for usage in usages:
+        apps.add(usage['app_name']) #collect set of applications for adding later
+        tool_desc =  {
+            'application': usage['app_name'],
+            'name': usage['tool_name'],
+        }
+        tool = db.tools.find_one(tool_desc)
+        if not tool:
+            tool = db.tools.update(tool_desc, tool_desc, upsert=True)
+        tool_id = tool.get('_id', tool.get('upserted'))
+        
+        db.usages.update({'tool': tool_id, 'user': g.user['email']}, {
+            'tool': tool_id,
+            'user': g.user['email'],
+            'keyboard': usage.get('keyboard', 0),
+            'mouse': usage.get('mouse', 0),
+            eve.LAST_UPDATED: datetime.now()
+        }, upsert=True)
+        
+    for name in apps:
+        db.applications.update({'name': name}, {'name': name}, upsert=True)
+
+    response.status_code = 201
+    return json.dumps({
+        'message': 'Usages were uploaded successfully',
+        '_status': 'OK',
+        '_code': '201'
+    })
+                
 if __name__ == '__main__':
-    app = Eve(auth=BCryptAuth, validator=Validator)
     app.debug = True
 
     app.on_delete_resource += require_admin
@@ -118,7 +134,8 @@ if __name__ == '__main__':
 
     app.on_pre_GET_images += restrict_image_access
 
-    http_server = HTTPServer(WSGIContainer(app))
-    http_server.bind(5000)
-    http_server.start(0)
-    IOLoop.instance().start()
+    # http_server = HTTPServer(WSGIContainer(app))
+    # http_server.bind(5000)
+    # http_server.start(0)
+    # IOLoop.instance().start()
+    app.run()

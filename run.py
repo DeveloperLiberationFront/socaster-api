@@ -3,7 +3,6 @@ import re
 import eve
 from eve import Eve
 from eve.auth import BasicAuth
-from eve.utils import parse_request
 from flask import g, abort
 from datetime import datetime
 from validator import Validator
@@ -85,6 +84,7 @@ def require_admin(*args):
 
 def multi_unique(resource, items, original=None):
     fields = get_list_field(resource, 'unique')
+    if not isinstance(items, list): items = [items]
     if not fields: return
     for item in items:
         query = {'_id': {'$ne': item['_id']}} if item.has_key('_id') else {}

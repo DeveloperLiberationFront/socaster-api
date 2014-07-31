@@ -1,6 +1,6 @@
 import eve, simplejson as json
 from eve import Eve
-from flask import g, abort, request, response
+from flask import g, abort, request, make_response
 from datetime import datetime
 from eve.auth import requires_auth
 
@@ -108,12 +108,11 @@ def record_bulk_usage():
     for name in apps:
         db.applications.update({'name': name}, {'name': name}, upsert=True)
 
-    response.status_code = 201
-    return json.dumps({
+    return make_response(json.dumps({
         'message': 'Usages were uploaded successfully',
         '_status': 'OK',
         '_code': '201'
-    })
+    }), 201)
                 
 if __name__ == '__main__':
     app.debug = True

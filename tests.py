@@ -317,7 +317,7 @@ class TestBasicEndpoints(unittest.TestCase):
             'keyboard': 3,
         }]
         response = s.post(url+'/report-usage', data=json.dumps(usages))
-        assert_success(response.json())
+        self.assert_success(response.json())
 
 test = TestBasicEndpoints() #useful for manual testing
 

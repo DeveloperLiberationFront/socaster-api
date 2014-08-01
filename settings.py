@@ -53,6 +53,7 @@ applications = {
             'type': 'string',
             'unique': True
         }
+        'icon': {'type': 'media'},
     }
 }
 

@@ -12,8 +12,9 @@ from tornado.options import options
 from validator import Validator
 from auth import SocasterAuth
 
-options.logging = 'debug'
-options.log_to_stderr = True
+options['logging'].set('debug')
+options['log_to_stderr'].set(True)
+options.parse_command_line()
 
 app = Eve(auth=SocasterAuth, validator=Validator)
 

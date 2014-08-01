@@ -7,9 +7,13 @@ from eve.auth import requires_auth
 from tornado.wsgi import WSGIContainer
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
+from tornado.options import options
 
 from validator import Validator
 from auth import SocasterAuth
+
+options.logging = 'debug'
+options.log_to_stderr = True
 
 app = Eve(auth=SocasterAuth, validator=Validator)
 
@@ -79,11 +83,23 @@ def restrict_image_access(request, lookup):
 @app.route('/report-usage', methods=['POST', 'PUT'])
 def record_bulk_usage():
     if not app.auth.authorized([], '', request.method):
-        return app.authenticate()
+        return app.auth.authenticate()
 
     db = app.data.driver.db
     #usages: [{app_name: str, tool_name: str, keyboard: int, mouse: int}]
     usages = request.get_json()
+    v = Validator({
+        'app_name': {'type': 'string', 'required': True},
+        'tool_name': {'type': 'string', 'required': True},
+        'keyboard': {'type': 'integer', 'required': True},
+        'mouse': {'type': 'integer', 'required': True}
+    })
+    if not usages or not isinstance(usages, list):
+        abort(400, "Please supply a list of usages")
+
+    if not all(map(v.validate, usages)):
+        abort(400, 'You must supply usage data in the form [{app_name: str, tool_name: str, keyboard: int, mouse: int}, ...]')
+
     apps = set()
     for usage in usages:
         apps.add(usage['app_name']) #collect set of applications for adding later
@@ -114,6 +130,7 @@ def record_bulk_usage():
     }), 201)
                 
 if __name__ == '__main__':
+    
     app.debug = True
 
     app.on_delete_resource += require_admin
@@ -136,4 +153,4 @@ if __name__ == '__main__':
     http_server.bind(5000)
     http_server.start(0)
     IOLoop.instance().start()
-    #app.run()
+    # app.run()

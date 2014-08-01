@@ -92,8 +92,8 @@ def record_bulk_usage():
     v = Validator({
         'app_name': {'type': 'string', 'required': True},
         'tool_name': {'type': 'string', 'required': True},
-        'keyboard': {'type': 'integer', 'required': True},
-        'mouse': {'type': 'integer', 'required': True}
+        'keyboard': {'type': 'integer'},
+        'mouse': {'type': 'integer'}
     })
     if not usages or not isinstance(usages, list):
         abort(400, "Please supply a list of usages")
@@ -108,7 +108,9 @@ def record_bulk_usage():
             'application': usage['app_name'],
             'name': usage['tool_name'],
         }
-        tool = db.tools.update(tool_desc, tool_desc, upsert=True)
+        tool = db.tools.find_one(tool_desc)
+        if not tool:
+            tool = db.tools.update(tool_desc, tool_desc, upsert=True)
         tool_id = tool.get('_id', tool.get('upserted'))
 
         #add user to tool user set

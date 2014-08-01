@@ -76,7 +76,7 @@ def restrict_image_access(request, lookup):
     if clip and g.user['email'] not in clip['share'].append(clip['user']) and 'public' not in clip['share']:
         abort(403, "You do not have access to the frames for this clip")
 
-@app.route('/report-usage', methods=['POST'])
+@app.route('/report-usage', methods=['POST', 'PUT'])
 def record_bulk_usage():
     if not app.auth.authorized([], '', request.method):
         return app.authenticate()
@@ -132,8 +132,8 @@ if __name__ == '__main__':
 
     app.on_pre_GET_images += restrict_image_access
 
-    # http_server = HTTPServer(WSGIContainer(app))
-    # http_server.bind(5000)
-    # http_server.start(0)
-    # IOLoop.instance().start()
-    app.run()
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.bind(5000)
+    http_server.start(0)
+    IOLoop.instance().start()
+    #app.run()

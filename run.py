@@ -108,11 +108,13 @@ def record_bulk_usage():
             'application': usage['app_name'],
             'name': usage['tool_name'],
         }
-        tool = db.tools.find_one(tool_desc)
-        if not tool:
-            tool = db.tools.update(tool_desc, tool_desc, upsert=True)
+        tool = db.tools.update(tool_desc, tool_desc, upsert=True)
         tool_id = tool.get('_id', tool.get('upserted'))
-        
+
+        #add user to tool user set
+        db.tools.update({'_id': tool_id},
+                        {'$addToSet': {'users': g.user['email']}})
+
         db.usages.update({'tool': tool_id, 'user': g.user['email']}, {
             'tool': tool_id,
             'user': g.user['email'],

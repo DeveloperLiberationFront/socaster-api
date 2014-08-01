@@ -61,6 +61,16 @@ tools = {
     'embedding': True,
     'schema': {
         'name': {'type': 'string'},
+        'users': {
+            'type': 'list',
+            'schema': {
+                'type': 'string',
+                'data_relation': {
+                    'resource': 'users',
+                    'field': 'email',
+                }
+            }
+        },
         'application': {
             'type': 'string',
             'data_relation': {

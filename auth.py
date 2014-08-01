@@ -1,12 +1,11 @@
 import bcrypt, re, eve, flask
 from eve.auth import BasicAuth
-from flask import g
+from flask import g, current_app as app
 from datetime import datetime
 
 class SocasterAuth(BasicAuth):
     def check_auth(self, username, password, allowed_roles, resource, method):
         # use Eve's own db driver; no additional connections/resources are used
-        app = flask.current_app
         users = app.data.driver.db['users']
         email, name = re.match("([^\|]*)\|?([^\|]*)", username).groups() #match email|name
         user = users.find_one({'email': email})

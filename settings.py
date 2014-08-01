@@ -144,6 +144,10 @@ notifications = {
 clips = {
     'creator': 'user', #store the creating user's email in the 'user' field
     'restrict_update': 'user', #only the creator can update/delete the clip
+    'additional_lookup': { #allow alternate lookup by email
+        'url': 'regex("[\w@.+]+")',
+        'field': 'name'
+    },
     'schema': {
         'name': {'type': 'string'},
         'user': {

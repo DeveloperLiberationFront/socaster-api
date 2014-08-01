@@ -52,7 +52,7 @@ applications = {
         'name': {
             'type': 'string',
             'unique': True
-        }
+        },
         'icon': {'type': 'media'},
     }
 }

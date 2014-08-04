@@ -13,6 +13,7 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
 EMBEDDING = True
+PAGINTATION = False
 XML = False
 
 users = {

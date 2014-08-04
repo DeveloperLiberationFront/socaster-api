@@ -197,11 +197,16 @@ clips = {
             'type': 'string',
             'allowed': ['mouse', 'keyboard']
         },
+        'frames': {
+            'type': 'list',
+            'schema': {'type': 'string'}
+        },
         'event_frames': {
             'type': 'list',
             'items': [{'type': 'integer'}],
             'default': [25]
         },
+        'thumbnail' { 'type': 'media' }
     }
 }
 

@@ -115,7 +115,7 @@ usages = {
 notifications = {
     'item_title': 'notification',
     'restrict_update': ['recipient', 'sender'],
-    'restrict_read': ['recipient', 'sender'],
+    'restrict_access': ['recipient', 'sender'],
     'creator': 'sender',
     'schema': {
         'recipient': {
@@ -158,6 +158,7 @@ notifications = {
 clips = {
     'creator': 'user', #store the creating user's email in the 'user' field
     'restrict_update': 'user', #only the creator can update/delete the clip
+    'restrict_access': ['share'],
     'additional_lookup': { #allow alternate lookup by email
         'url': 'regex("[\w@.+]+")',
         'field': 'name'

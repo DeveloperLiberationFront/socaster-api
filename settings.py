@@ -122,14 +122,16 @@ notifications = {
             'data_relation': {
                 'resource': 'users',
                 'field': 'email',
-            }
+            },
+            'embeddable': True,
         },
         'sender': {
             'type': 'string',
             'data_relation': {
                 'resource': 'users',
                 'field': 'email',
-            }
+            },
+            'embeddable': True,
         },
         'message': { 'type': 'string' },
         'application': {
@@ -144,7 +146,8 @@ notifications = {
             'data_relation': {
                 'resource': 'tools',
                 'field': '_id',
-            }
+            },
+            'embeddable': True,
         },
         'type': { 'type': 'string' },
         'status': { 'type': 'string' }

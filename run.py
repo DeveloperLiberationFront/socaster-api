@@ -53,8 +53,12 @@ def set_creator(resource, items):
     fields = get_list_field(resource, 'creator')
     if not fields: return
     for field in fields:
+        field_type = app.config['DOMAIN'][resource]['schema'][field]['type']
         for item in items:
-            item[field] = g.user['email']
+            if field_type is 'objectid':
+                item[field] = g.user['_id']
+            else:
+                item[field] = g.user['email']
 
 def prevent_escalation(item, original=None):
     if 'roles' in item and 'admin' not in g.user.get('roles', []):

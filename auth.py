@@ -25,5 +25,5 @@ class SocasterAuth(BasicAuth):
                 eve.DATE_CREATED: dt,
                 eve.LAST_UPDATED: dt
             }
-            app.data.insert('users', g.user)
+            g.user['_id'] = app.data.insert('users', g.user)
             return True

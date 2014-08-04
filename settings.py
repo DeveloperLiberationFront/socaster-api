@@ -206,7 +206,7 @@ clips = {
             'items': [{'type': 'integer'}],
             'default': [25]
         },
-        'thumbnail' { 'type': 'media' }
+        'thumbnail': { 'type': 'media' }
     }
 }
 

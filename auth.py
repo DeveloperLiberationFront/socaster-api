@@ -1,4 +1,4 @@
-import bcrypt, re, eve, flask
+import hashlib, re, eve, flask
 from eve.auth import BasicAuth
 from flask import g, current_app as app
 from datetime import datetime
@@ -12,9 +12,9 @@ class SocasterAuth(BasicAuth):
         if user:
             g.user = user
             self.set_request_auth_value(email)
-            return bcrypt.hashpw(password, user['auth_hash']) == user['auth_hash']
+            return hashlib.md5(password).hexdigest() == user['auth_hash']
         else:
-            auth_hash = bcrypt.hashpw(password, bcrypt.gensalt())
+            auth_hash = hashlib.md5(password).hexdigest()
             self.set_request_auth_value(email)
             dt = datetime.now()
             g.user = {

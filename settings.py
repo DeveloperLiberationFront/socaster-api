@@ -118,18 +118,18 @@ notifications = {
     'creator': 'sender',
     'schema': {
         'recipient': {
-            'type': 'string',
+            'type': 'objectid',
             'data_relation': {
                 'resource': 'users',
-                'field': 'email',
+                'field': '_id',
                 'embeddable': True,
             },
         },
         'sender': {
-            'type': 'string',
+            'type': 'objectid',
             'data_relation': {
                 'resource': 'users',
-                'field': 'email',
+                'field': '_id',
                 'embeddable': True,
             },
         },

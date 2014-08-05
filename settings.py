@@ -211,7 +211,7 @@ clips = {
             'data_relation': {
                 'resource': 'images',
                 'field': '_id',
-                'embedded': True,
+                'embeddable': True,
             },
         }
     }

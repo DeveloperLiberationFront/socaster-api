@@ -47,7 +47,6 @@ applications = {
         'url': 'regex("[\w]+")',
         'field': 'name'
     },
-    'embedding': True,
 
     'schema': {
         'name': {
@@ -59,7 +58,6 @@ applications = {
 }
 
 tools = {
-    'embedding': True,
     'schema': {
         'name': {'type': 'string'},
         'users': {
@@ -207,7 +205,14 @@ clips = {
                 'type': 'integer',
             },
         },
-        'thumbnail': { 'type': 'media' }
+        'thumbnail': { 
+            'type': 'objectid',
+            'data_relation': {
+                'resource': 'images',
+                'field': '_id',
+                'embedded': True,
+            },
+        }
     }
 }
 
@@ -240,6 +245,7 @@ images = {
         'url': 'regex("[\w@.+]+")',
         'field': 'name'
     },
+    'embeddable': True,
     'restrict_update': 'user',
     'creator': 'user',
     'schema': {

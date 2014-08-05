@@ -203,8 +203,9 @@ clips = {
         },
         'event_frames': {
             'type': 'list',
-            'items': [{'type': 'integer'}],
-            'default': [25]
+            'schema': {
+                'type': 'integer',
+            },
         },
         'thumbnail': { 'type': 'media' }
     }

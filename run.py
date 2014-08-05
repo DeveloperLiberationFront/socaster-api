@@ -130,7 +130,7 @@ def record_bulk_usage():
         }, upsert=True)
         
     for name in apps:
-        db.applications.update({'name': name}, {'name': name}, upsert=True)
+        db.applications.update({'name': name}, {'$set': {'name': name}}, upsert=True)
 
     return make_response(json.dumps({
         'message': 'Usages were uploaded successfully',

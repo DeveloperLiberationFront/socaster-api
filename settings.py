@@ -176,6 +176,7 @@ clips = {
             'data_relation': {
                 'resource': 'tools',
                 'field': '_id',
+                'embeddable': True
             }
         },
         'share': {

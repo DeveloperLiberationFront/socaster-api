@@ -161,6 +161,7 @@ clips = {
         'url': 'regex("[\w@.+]+")',
         'field': 'name'
     },
+    'embedded_fields': ['thumbnail'],
     'schema': {
         'name': {'type': 'string'},
         'user': {

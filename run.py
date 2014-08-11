@@ -146,16 +146,14 @@ def yammer_login_post():
     if "code" in request.args:
         code = request.get_json()
         
-        try:
-            authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-            access_token = authenticator.fetch_access_token(code["code"])
-            print access_token
-        except Exception:
-            print "Exception"
+        authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+        access_token = authenticator.fetch_access_token(code["code"])
+        print access_token
 
         return make_response(json.dumps({
                 'message': 'Successfully connected to Yammer',
                 '_status': 'OK',
+                'access_token': access_token,
                 '_code': "201"
             }), 200)
     else:

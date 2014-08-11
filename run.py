@@ -140,7 +140,16 @@ def record_bulk_usage():
 
 @app.route('/yammer-login', methods=["POST", "PUT"])
 def yammer_login():
-    print "Loggin into Yammer"
+    print 'Loggin into Yammer'
+    code = request.get_json()
+    
+    print code["code"]
+
+    return make_response(json.dumps({
+            'message': 'Successfully connected to Yammer',
+            '_status': 'OK',
+            '_code': "201"
+        }), 200)
                 
 if __name__ == '__main__':
     

@@ -144,11 +144,11 @@ def record_bulk_usage():
 def yammer_login_post():
 
     if "code" in request.args:
-        code = request.get_json()
+        code = request.args["code"];
         
         try:
             authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-            access_token = authenticator.fetch_access_token(code["code"])
+            access_token = authenticator.fetch_access_token(code)
             print access_token
 
             return make_response(json.dumps({

@@ -140,28 +140,30 @@ def record_bulk_usage():
         '_code': '201'
     }), 201)
 
-@app.route('/yammer-login', methods=["GET"])
-def yammer_login_get():
-    authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-    auth_url = authenticator.authorization_url(redirect_uri="localhost:5001/yammer-login")
-
-    return redirect(auth_url, 302)
-
-@app.route('/yammer-login', methods=["POST", "PUT"])
+@app.route('/yammer-login', methods=["POST", "PUT", "GET"])
 def yammer_login_post():
-    print 'Loggin into Yammer'
-    code = request.get_json()
-    
-    authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-    access_token = authenticator.fetch_access_token(code["code"])
 
-    #https://www.yammer.com/oauth2/access_token.json?client_id=[:client_id]&client_secret=[:client_secret]&code=[:code]
+    if request.method == "GET":
+        print 'Get Loggin into Yammer'
+        authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+        auth_url = authenticator.authorization_url(redirect_uri="localhost:5001/yammer-login")
 
-    return make_response(json.dumps({
-            'message': 'Successfully connected to Yammer',
-            '_status': 'OK',
-            '_code': "201"
-        }), 200)
+        return redirect(auth_url, 302)
+
+    else:
+        print 'Post Loggin into Yammer'
+        code = request.get_json()
+        
+        authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+        access_token = authenticator.fetch_access_token(code["code"])
+
+        #https://www.yammer.com/oauth2/access_token.json?client_id=[:client_id]&client_secret=[:client_secret]&code=[:code]
+
+        return make_response(json.dumps({
+                'message': 'Successfully connected to Yammer',
+                '_status': 'OK',
+                '_code': "201"
+            }), 200)
                 
 if __name__ == '__main__':
     

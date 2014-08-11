@@ -166,8 +166,9 @@ def yammer_login_post():
     else:
         authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
         auth_url = authenticator.authorization_url(redirect_uri="localhost:5001/yammer-login")
-
-        return redirect(auth_url, 302)
+        client_id = "h3V8HGfIF8Cue8QHnJRDJQ"
+        #https://www.yammer.com/dialog/oauth?client_id=[:client_id]&redirect_uri=[:redirect_uri]
+        return redirect("https://www.yammer.com/dialog/oauth?client_id=" + client_id + "&redirect_uri=localhost:5001/yammer-login", 302)
                 
 if __name__ == '__main__':
     

@@ -137,6 +137,10 @@ def record_bulk_usage():
         '_status': 'OK',
         '_code': '201'
     }), 201)
+
+@app.route('/yammer-login', methods=["POST", "PUT"])
+def yammer_login():
+    print "Loggin into Yammer"
                 
 if __name__ == '__main__':
     

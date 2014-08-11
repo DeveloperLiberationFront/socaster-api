@@ -142,19 +142,22 @@ def record_bulk_usage():
 
 @app.route('/yammer-login', methods=["GET"])
 def yammer_login_post():
+    if not app.auth.authorized([], '', request.method):
+        return app.auth.authenticate()
+
     authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
 
     if "code" in request.args:
         code = request.args["code"];
         
         try:
-            access_token = authenticator.fetch_access_token(code)
-            print access_token
+            yammer_access_token = authenticator.fetch_access_token(code)
+            print yammer_access_token
 
             return make_response(json.dumps({
                     'message': 'Successfully connected to Yammer',
                     '_status': 'OK',
-                    'access_token': access_token,
+                    'yammer_access_token': yammer_access_token,
                     '_code': "201"
                 }), 200)
         except:
@@ -165,7 +168,7 @@ def yammer_login_post():
                 }), 401)
     else:
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/yammer-login")
-        print auth_url
+        print auth_url += "&" + request.args["access_token"]
         return redirect(auth_url, 302)
                 
 if __name__ == '__main__':

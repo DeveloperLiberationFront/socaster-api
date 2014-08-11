@@ -216,6 +216,7 @@ class TestBasicEndpoints(unittest.TestCase):
             'tool': tool['_id'],
             'share': ['public'],
             'type': 'keyboard',
+            'event_frames': [25]
         })
         self.assert_success(result)
 
@@ -226,6 +227,7 @@ class TestBasicEndpoints(unittest.TestCase):
             'tool': tool['_id'],
             'share': ['blah'],
             'type': 'keyboard',
+            'event_frames': [25]
         })
         self.assert_failure(result, code=400)
 
@@ -236,8 +238,24 @@ class TestBasicEndpoints(unittest.TestCase):
             'tool': tool['_id'],
             'share': [email('User1')],
             'type': 'keyboard',
+            'event_frames': [25]
         })
         self.assert_success(result)
+
+    def test_thumbnail_clip(self):
+        tool = get_collection('tools', where={"application":"Eclipse"})[0]
+        result = requests.post(url+'/clips',
+                               files={"thumbnail": open("thumbnail.jpg", 'rb')},
+                               data={
+                                   'name': 'Test Thumbnail Clip',
+                                   'tool': tool['_id'],
+                                   'share': json.dumps(['public']),
+                                   'type': 'keyboard',
+                                   'event_frames': json.dumps([25])
+                               },
+                               auth=auth('Test'))
+        print result.text
+        self.assertEqual(result.status_code, 201)
 
     def test_new_rating(self):
         clip = get_collection('clips')[0]

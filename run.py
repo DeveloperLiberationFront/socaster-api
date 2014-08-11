@@ -140,22 +140,13 @@ def record_bulk_usage():
         '_code': '201'
     }), 201)
 
-@app.route('/yammer-login', methods=["POST", "PUT", "GET"])
+@app.route('/yammer-login', methods=["GET"])
 def yammer_login_post():
 
-    if request.method == "GET":
-        print 'Get Logging into Yammer'
-        authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-        auth_url = authenticator.authorization_url(redirect_uri="localhost:5001/yammer-login")
-
-        return redirect(auth_url, 302)
-
-    else:
-        print 'Post Logging into Yammer'
+    if "code" in request.args:
         code = request.get_json()
         
         try:
-            print code["code"]
             authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
             access_token = authenticator.fetch_access_token(code["code"])
             print access_token
@@ -167,6 +158,11 @@ def yammer_login_post():
                 '_status': 'OK',
                 '_code': "201"
             }), 200)
+    else:
+        authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+        auth_url = authenticator.authorization_url(redirect_uri="localhost:5001/yammer-login")
+
+        return redirect(auth_url, 302)
                 
 if __name__ == '__main__':
     

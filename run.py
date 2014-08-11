@@ -159,7 +159,7 @@ if __name__ == '__main__':
     app.on_pre_GET_images += restrict_image_access
 
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.bind(5000)
+    http_server.bind(5001)
     http_server.start(0)
     IOLoop.instance().start()
     # app.run()

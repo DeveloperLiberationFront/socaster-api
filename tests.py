@@ -64,6 +64,16 @@ def create_item(collection, data, auth=None):
     except Exception:
         return result
 
+def create_items(collection, *data, **kwargs):
+    auth = kwargs.get('auth')
+    result = s.post(url+'/'+collection,
+                    data=json.dumps(data),
+                    auth=auth)
+    try:
+        return result.json()
+    except Exception:
+        return result
+
 def upload_item(collection, files, auth=None):
     result = s.post(url+'/'+collection,
                     files=files,
@@ -336,6 +346,14 @@ class TestBasicEndpoints(unittest.TestCase):
         }]
         response = s.post(url+'/report-usage', data=json.dumps(usages))
         self.assert_success(response.json())
+
+    def test_upload_events(self):
+        result = create_item('events', {
+            'application': 'Eclipse',
+            'tool': 'Save',
+            'time': int((datetime.now() - datetime(1970,1,1)).total_seconds()*1000)
+        })
+        self.assert_success(result)
 
 test = TestBasicEndpoints() #useful for manual testing
 

@@ -270,6 +270,28 @@ images = {
     }
 }
 
+events = {
+    'schema': {
+        'application': { 'type': 'string' },
+        'tool': { 'type': 'string' },
+
+        #Remaining fields match UBC Recommender requirements
+        "user_id" : {
+            'type': 'string',
+            'data_relation': {
+                'resource': 'users',
+                'field': 'email',
+            }
+        },
+        "what" : {'type': 'string', 'default': 'executed'},
+        "kind" : {'type': 'string', 'default': 'command'},
+        "description" : {'type': 'objectid'}, #submitted as application and tool, but translated in hook
+        "bindingUsed" : {'type': 'boolean', 'default': False},
+        "time" : {'type': 'integer', 'default': 0},
+        "bundleVersion" : {'type': 'string', 'default': 'faked'}
+    }
+}
+
 DOMAIN = {
     'users': users,
     'applications': applications,
@@ -279,4 +301,5 @@ DOMAIN = {
     'clips': clips,
     'ratings': ratings,
     'images': images,
+    'events': events,
 }

@@ -85,6 +85,25 @@ def restrict_image_access(request, lookup):
     if clip and g.user['email'] not in clip['share'].append(clip['user']) and 'public' not in clip['share']:
         abort(403, "You do not have access to the frames for this clip")
 
+def insert_events(items):
+    db = app.data.driver.db
+    for item in items:
+        tool = db.tools.find_one({'name': item['tool'], 'application': item['application']})
+        if not tool: abort(400, 'Tool does not exist')
+
+        item['description'] = tool['_id']
+
+    user = db.users.find_one({'_id': g.user['_id']})
+    if not user: abort(400, 'User does not exist?')
+
+    now = datetime.now()
+    user.update({
+        'user_id': user['email'],
+        'last_uploaded_date': now,
+        eve.LAST_UPDATED: now
+    })
+    db.users.update({'_id': user['_id']}, user)
+
 @app.route('/report-usage', methods=['POST', 'PUT'])
 def record_bulk_usage():
     if not app.auth.authorized([], '', request.method):
@@ -157,6 +176,8 @@ if __name__ == '__main__':
     app.on_replace_users += prevent_escalation
 
     app.on_pre_GET_images += restrict_image_access
+
+    app.on_insert_events += insert_events
 
     http_server = HTTPServer(WSGIContainer(app))
     http_server.bind(5000)

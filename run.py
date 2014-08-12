@@ -118,7 +118,7 @@ def insert_events(items):
     now = datetime.now()
     user.update({
         'user_id': user['email'],
-        'last_uploaded_date': now,
+        'last_upload_date': now,
         eve.LAST_UPDATED: now
     })
     db.users.update({'_id': user['_id']}, user)

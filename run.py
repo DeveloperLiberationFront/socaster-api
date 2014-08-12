@@ -145,7 +145,7 @@ def yammer_login_post():
     if not app.auth.authorized([], '', request.method):
         return app.auth.authenticate()
 
-    authenticator = yampy.Authenticator(client_id= "h3V8HGfIF8Cue8QHnJRDJQ", client_secret= "NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+    authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
 
     if "code" in request.args:
         code = request.args["code"];

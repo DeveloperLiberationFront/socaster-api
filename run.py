@@ -161,12 +161,7 @@ def yammer_login_post():
             db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=True)
             print db.yammer_tokens.find_one({"user": g.user["email"]})
 
-            return make_response(json.dumps({
-                    'message': 'Successfully connected to Yammer',
-                    '_status': 'OK',
-                    'yammer_access_token': yammer_access_token,
-                    '_code': "201"
-                }), 201)
+            return redirect("localhost:4333/status", 201)
         except:
             return make_response(json.dumps({
                     'message': "Failed to connect to Yammer",
@@ -175,7 +170,7 @@ def yammer_login_post():
                 }), 401)
     else:
         print("Getting url")
-        auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/v2/yammer-login")
+        auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
         return redirect(auth_url, 302)
                 
 if __name__ == '__main__':

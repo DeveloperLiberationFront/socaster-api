@@ -158,7 +158,7 @@ def yammer_login_post():
         yammer_access_token = authenticator.fetch_access_token(code)
         print "Show this one too...."
         print yammer_access_token
-        db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
+        db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=True)
         print db.find_one({"user": g.user["email"]})
 
         return make_response(json.dumps({

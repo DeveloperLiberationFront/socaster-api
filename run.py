@@ -153,6 +153,7 @@ def yammer_login_post():
         
         try:
             yammer_access_token = authenticator.fetch_access_token(code)
+            print yammer_access_token
             db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
             print db.find_one({"user": g.user["email"]})
 
@@ -171,7 +172,6 @@ def yammer_login_post():
     else:
         print("Getting url")
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
-        print auth_url
         return redirect(auth_url, 302)
                 
 if __name__ == '__main__':

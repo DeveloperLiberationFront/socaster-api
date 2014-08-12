@@ -152,7 +152,9 @@ def yammer_login_post():
         db = app.data.driver.db
         
         try:
+            print "Show this message"
             yammer_access_token = authenticator.fetch_access_token(code)
+            print "Show this one too...."
             print yammer_access_token
             db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
             print db.find_one({"user": g.user["email"]})

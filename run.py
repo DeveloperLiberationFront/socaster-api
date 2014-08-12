@@ -149,10 +149,12 @@ def yammer_login_post():
 
     if "code" in request.args:
         code = request.args["code"];
+        db = app.data.driver.db
         
         try:
             yammer_access_token = authenticator.fetch_access_token(code)
-            print yammer_access_token
+            db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
+            print db.find_one({"user": g.user["email"]})
 
             return make_response(json.dumps({
                     'message': 'Successfully connected to Yammer',
@@ -167,7 +169,7 @@ def yammer_login_post():
                     '_code': '401'
                 }), 401)
     else:
-        auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/yammer-login")
+        auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/v2/yammer-login")
         auth_url += "&" + request.args["access_token"]
         print auth_url
         return redirect(auth_url, 302)

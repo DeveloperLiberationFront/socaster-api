@@ -152,27 +152,27 @@ def yammer_login_post():
         print request.args
         db = app.data.driver.db
         
-        try:
-            print "Show this message"
-            print code
-            yammer_access_token = authenticator.fetch_access_token(code)
-            print "Show this one too...."
-            print yammer_access_token
-            db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
-            print db.find_one({"user": g.user["email"]})
+        #try:
+        print "Show this message"
+        print code
+        yammer_access_token = authenticator.fetch_access_token(code)
+        print "Show this one too...."
+        print yammer_access_token
+        db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=true)
+        print db.find_one({"user": g.user["email"]})
 
-            return make_response(json.dumps({
-                    'message': 'Successfully connected to Yammer',
-                    '_status': 'OK',
-                    'yammer_access_token': yammer_access_token,
-                    '_code': "201"
-                }), 200)
-        except:
+        return make_response(json.dumps({
+                'message': 'Successfully connected to Yammer',
+                '_status': 'OK',
+                'yammer_access_token': yammer_access_token,
+                '_code': "201"
+            }), 200)
+        '''except:
             return make_response(json.dumps({
                     'message': "Failed to connect to Yammer",
                     '_status': 'Validation Failure',
                     '_code': '401'
-                }), 401)
+                }), 401)'''
     else:
         print("Getting url")
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")

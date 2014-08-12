@@ -169,8 +169,8 @@ def yammer_login_post():
                     '_code': '401'
                 }), 401)
     else:
+        print("Getting url")
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/v2/yammer-login")
-        auth_url += "&" + request.args["access_token"]
         print auth_url
         return redirect(auth_url, 302)
                 

@@ -149,10 +149,12 @@ def yammer_login_post():
 
     if "code" in request.args:
         code = request.args["code"];
+        print request.args
         db = app.data.driver.db
         
         try:
             print "Show this message"
+            print code
             yammer_access_token = authenticator.fetch_access_token(code)
             print "Show this one too...."
             print yammer_access_token

@@ -149,23 +149,16 @@ def yammer_login_post():
 
     if "code" in request.args:
         code = request.args["code"];
-        print request.args
         db = app.data.driver.db
         
         try:
-            print "Show this message"
-            print code
             yammer_access_token = authenticator.fetch_access_token(code)
-            print "Show this one too...."
-            print yammer_access_token
             db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=True)
-            print db.yammer_tokens.find_one({"user": g.user["email"]})
 
             return redirect("localhost:4333/#/status", 201)
         except:
             return redirect("localhost:4333/#/status", 401)
     else:
-        print("Getting url")
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
         return redirect(auth_url, 302)
                 

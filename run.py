@@ -169,7 +169,8 @@ def yammer_login_id(id):
             user = db.users.find({"_id": id})
             if user:
                 yammer_access_token = authenticator.fetch_access_token(code)
-                print code + ": " + str(yammer_access_token)
+                print "token" + ": " + str(yammer_access_token)
+                print user
                 db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
 
                 return redirect("http://localhost:4333/#/status", 201)

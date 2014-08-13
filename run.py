@@ -143,7 +143,7 @@ def record_bulk_usage():
 
 @app.route('/yammer-login', methods=["OPTIONS"])
 def options():
-    return make_response("", 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Autorization, Content-Type"})
+    return make_response("", 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
 
 @app.route('/yammer-login', methods=["GET"])
 def yammer_login_post():

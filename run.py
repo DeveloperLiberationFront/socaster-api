@@ -140,11 +140,6 @@ def record_bulk_usage():
         '_code': '201'
     }), 201)
 
-
-@app.route('/yammer-login', methods=["OPTIONS"])
-def options():
-
-
 @app.route('/yammer-login', methods=["GET"])
 def yammer_login_post():
     if not app.auth.authorized([], '', request.method):

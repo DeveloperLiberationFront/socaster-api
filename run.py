@@ -171,11 +171,11 @@ def yammer_login_id(id):
                 yammer_access_token = authenticator.fetch_access_token(code)
                 db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
 
-                return redirect("localhost:4333/#/status", 201)
+                return redirect("http://localhost:4333/#/status", 201)
             else:
-                return redirect("localhost:4333/#/status", 401)
+                return redirect("http://localhost:4333/#/status", 401)
         except:
-            return redirect("localhost:4333/#/status", 401)
+            return redirect("http://localhost:4333/#/status", 401)
                 
 if __name__ == '__main__':
     

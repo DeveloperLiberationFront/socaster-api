@@ -1,3 +1,15 @@
+#!/usr/local/bin/python2.7
+
+import os
+from setproctitle import setproctitle
+setproctitle('socaster-api')
+
+if os.geteuid() == 0:
+    #write pidfile for use as daemon
+    pidfile = open("/var/run/socaster-api.pid", "w")
+    pidfile.write(str(os.getpid()))
+    pidfile.close()
+
 import eve, simplejson as json
 from eve import Eve
 from flask import g, abort, request, make_response
@@ -8,13 +20,20 @@ from tornado.wsgi import WSGIContainer
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
 from tornado.options import options
+import logging
+from mongolog.handlers import MongoHandler
 
 from validator import Validator
 from auth import SocasterAuth
 
+#set up logging for tornado + copy logs to mongo
 options.logging = 'debug'
 options.log_to_stderr = True
 options.parse_command_line()
+# handler = MongoHandler.to(db='socaster', collection='log',
+#                           username='eve', password='api service access')
+# for name in ['tornado.access', 'tornado.application', 'tornado.general']:
+#     logging.getLogger(name).addHandler(handler)
 
 app = Eve(auth=SocasterAuth, validator=Validator)
 
@@ -180,7 +199,6 @@ if __name__ == '__main__':
     app.on_insert_events += insert_events
 
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.bind(5000)
-    http_server.start(0)
+    http_server.listen(5000)
     IOLoop.instance().start()
     # app.run()

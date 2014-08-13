@@ -152,9 +152,8 @@ def yammer_login():
         return app.auth.authenticate()
 
     authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-
     auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login/" + str(g.user["_id"]))
-    print auth_url
+    
     return make_response(json.dumps({
         'url': auth_url,
     }), 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
@@ -170,16 +169,12 @@ def yammer_login_id(id):
             user = db.users.find_one({"_id": ObjectId(id)})
             if user:
                 yammer_access_token = authenticator.fetch_access_token(code)
-                print "token" + ": " + str(yammer_access_token)
-                print user
                 db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
 
                 return redirect("http://localhost:4443/#/status", 201)
             else:
-                print "Couldn't find user"
                 return redirect("http://localhost:4443/#/status", 401)
         except:
-            print "Failed to connect with Yammer"
             return redirect("http://localhost:4443/#/status", 401)
                 
 if __name__ == '__main__':

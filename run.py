@@ -146,30 +146,37 @@ def options():
     return make_response("", 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
 
 @app.route('/yammer-login', methods=["GET"])
-def yammer_login_post():
+def yammer_login():
     if not app.auth.authorized([], '', request.method):
         return app.auth.authenticate()
 
     authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
 
+    auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
+    auth_url += "&id=" + g.user["_id"]
+    
+    return make_response(json.dumps({
+        'url': auth_url,
+    }), 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
+
+@app.route("/yammer-login/<id>")
+def yammer_login_id(id):
     if "code" in request.args:
+        authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
         code = request.args["code"];
         db = app.data.driver.db
-        
-        try:
-            yammer_access_token = authenticator.fetch_access_token(code)
-            db.yammer_tokens.update({"user": g.user["email"]}, {"user": g.user["email"], "token": yammer_access_token}, upsert=True)
 
-            return redirect("localhost:4333/#/status", 201)
+        try:
+            user = db.users.find({"_id": id})
+            if user:
+                yammer_access_token = authenticator.fetch_access_token(code)
+                db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
+
+                return redirect("localhost:4333/#/status", 201)
+            else:
+                return redirect("localhost:4333/#/status", 401)
         except:
             return redirect("localhost:4333/#/status", 401)
-    else:
-        auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
-        auth_url += "&id=" + g.user["_id"]
-        
-        return make_response(json.dumps({
-            'url': auth_url,
-        }), 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
                 
 if __name__ == '__main__':
     

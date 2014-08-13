@@ -111,6 +111,7 @@ def insert_events(items):
         if not tool: abort(400, 'Tool does not exist')
 
         item['description'] = tool['_id']
+        item['user_id'] = g.user['email']
 
     user = db.users.find_one({'_id': g.user['_id']})
     if not user: abort(400, 'User does not exist?')

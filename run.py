@@ -166,7 +166,7 @@ def yammer_login_id(id):
         db = app.data.driver.db
 
         try:
-            user = db.users.find({"_id": id})
+            user = db.users.find_one({"_id": id})
             if user:
                 yammer_access_token = authenticator.fetch_access_token(code)
                 print "token" + ": " + str(yammer_access_token)

@@ -174,13 +174,13 @@ def yammer_login_id(id):
                 print user
                 db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
 
-                return redirect("http://localhost:4333/#/status", 201)
+                return redirect("http://localhost:4443/#/status", 201)
             else:
                 print "Couldn't find user"
-                return redirect("http://localhost:4333/#/status", 401)
+                return redirect("http://localhost:4443/#/status", 401)
         except:
             print "Failed to connect with Yammer"
-            return redirect("http://localhost:4333/#/status", 401)
+            return redirect("http://localhost:4443/#/status", 401)
                 
 if __name__ == '__main__':
     

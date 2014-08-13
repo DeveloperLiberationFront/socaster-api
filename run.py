@@ -13,6 +13,7 @@ from validator import Validator
 from auth import SocasterAuth
 
 import yampy
+from bson.objectid import ObjectId
 
 options.logging = 'debug'
 options.log_to_stderr = True
@@ -166,7 +167,7 @@ def yammer_login_id(id):
         db = app.data.driver.db
 
         try:
-            user = db.users.find_one({"_id": id})
+            user = db.users.find_one({"_id": ObjectId(id)})
             if user:
                 yammer_access_token = authenticator.fetch_access_token(code)
                 print "token" + ": " + str(yammer_access_token)

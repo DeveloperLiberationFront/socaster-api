@@ -168,7 +168,7 @@ def yammer_login_post():
         
         return make_response(json.dumps({
             'url': auth_url,
-        }), 200)
+        }), 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
                 
 if __name__ == '__main__':
     

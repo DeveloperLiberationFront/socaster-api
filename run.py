@@ -165,6 +165,7 @@ def yammer_login_post():
             return redirect("localhost:4333/#/status", 401)
     else:
         auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login")
+        auth_url += "&id=" + g.user["_id"]
         
         return make_response(json.dumps({
             'url': auth_url,

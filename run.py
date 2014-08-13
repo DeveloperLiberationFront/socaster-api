@@ -173,8 +173,10 @@ def yammer_login_id(id):
 
                 return redirect("http://localhost:4333/#/status", 201)
             else:
+                print "Couldn't find user"
                 return redirect("http://localhost:4333/#/status", 401)
         except:
+            print "Failed to connect with Yammer"
             return redirect("http://localhost:4333/#/status", 401)
                 
 if __name__ == '__main__':

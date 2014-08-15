@@ -192,7 +192,7 @@ def yammer_login():
         return app.auth.authenticate()
 
     authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
-    auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login/" + str(g.user["_id"]))
+    auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/v2/yammer-login/" + str(g.user["_id"]))
     
     return make_response(json.dumps({
         'url': auth_url,

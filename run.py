@@ -62,7 +62,8 @@ def restrict_update(resource, item, original=None):
     found = False
     for field in fields:
         value = original[field] if original else item[field]
-        if (isinstance(value, list) and g.user['email'] in value) or g.user['email'] == value:
+        if (isinstance(value, list) and g.user['email'] in value or g.user['_id'] in value) \
+           or g.user['email'] == value or g.user["_id"] == value:
             found = True
 
     if not found: abort(403)

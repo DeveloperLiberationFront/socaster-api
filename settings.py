@@ -292,6 +292,47 @@ events = {
     }
 }
 
+user_tools = {
+    'restrict_access': ['user'],
+    'resource_methods': ['GET'],
+    'item_methods': ['GET'],
+    'schema': {
+        #matches tool schema, plus tool_id for reference
+        'tool_id': {
+            'type': 'objectid',
+            'data_relation': {
+                'resource': 'tools',
+                'field': '_id',
+                'embeddable': True
+            }
+        },
+        'application': { 'type': 'string' },
+        'name': { 'type': 'string' },
+        'users': {
+            'type': 'list',
+            'schema': {
+                'type': 'string',
+                'data_relation': {
+                    'resource': 'users',
+                    'field': 'email',
+                }
+            }
+        },
+
+        #belongs to a specific user, for recommendations
+        'user' : {
+            'type': 'string',
+            'data_relation': {
+                'resource': 'users',
+                'field': 'email',
+            }
+        },
+        'recommendations': {
+            'type': 'dict'
+        }
+    }
+}
+
 DOMAIN = {
     'users': users,
     'applications': applications,
@@ -302,4 +343,5 @@ DOMAIN = {
     'ratings': ratings,
     'images': images,
     'events': events,
+    'user_tools': user_tools,
 }

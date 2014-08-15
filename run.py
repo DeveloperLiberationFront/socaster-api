@@ -12,13 +12,16 @@ if os.geteuid() == 0:
 
 import eve, simplejson as json
 from eve import Eve
-from flask import g, abort, request, make_response
+from flask import g, abort, request, make_response, redirect
 from datetime import datetime
 
 from tornado.wsgi import WSGIContainer
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
 from tornado.options import options
+
+import yampy
+from bson.objectid import ObjectId
 
 from validator import Validator
 from auth import SocasterAuth
@@ -177,6 +180,42 @@ def record_bulk_usage():
         '_status': 'OK',
         '_code': '201'
     }), 201)
+
+
+@app.route('/yammer-login', methods=["OPTIONS"])
+def options():
+    return make_response("", 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
+
+@app.route('/yammer-login', methods=["GET"])
+def yammer_login():
+    if not app.auth.authorized([], '', request.method):
+        return app.auth.authenticate()
+
+    authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+    auth_url = authenticator.authorization_url(redirect_uri="http://recommender.oscar.ncsu.edu/api/test/yammer-login/" + str(g.user["_id"]))
+    
+    return make_response(json.dumps({
+        'url': auth_url,
+    }), 200, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type"})
+
+@app.route("/yammer-login/<id>")
+def yammer_login_id(id):
+    if "code" in request.args:
+        authenticator = yampy.Authenticator(client_id="h3V8HGfIF8Cue8QHnJRDJQ", client_secret="NihCDhkZU0fszQ0H7ZHG5Gsr7qQGuLhQBrgaBmskl4")
+        code = request.args["code"];
+        db = app.data.driver.db
+
+        try:
+            user = db.users.find_one({"_id": ObjectId(id)})
+            if user:
+                yammer_access_token = authenticator.fetch_access_token(code)
+                db.yammer_tokens.update({"user": user["email"]}, {"user": user["email"], "token": yammer_access_token}, upsert=True)
+
+                return redirect("http://localhost:4443/#/status", 201)
+            else:
+                return redirect("http://localhost:4443/#/status", 401)
+        except:
+            return redirect("http://localhost:4443/#/status", 401)
                 
 if __name__ == '__main__':
     

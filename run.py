@@ -14,14 +14,11 @@ import eve, simplejson as json
 from eve import Eve
 from flask import g, abort, request, make_response
 from datetime import datetime
-from eve.auth import requires_auth
 
 from tornado.wsgi import WSGIContainer
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
 from tornado.options import options
-import logging
-from mongolog.handlers import MongoHandler
 
 from validator import Validator
 from auth import SocasterAuth
@@ -30,6 +27,10 @@ from auth import SocasterAuth
 options.logging = 'debug'
 options.log_to_stderr = True
 options.parse_command_line()
+
+# Mongo logging
+# import logging
+# from mongolog.handlers import MongoHandler
 # handler = MongoHandler.to(db='socaster', collection='log',
 #                           username='eve', password='api service access')
 # for name in ['tornado.access', 'tornado.application', 'tornado.general']:

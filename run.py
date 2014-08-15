@@ -46,10 +46,9 @@ def get_list_field(resource, name):
 def restrict_access(resource, request, lookup):
     fields = get_list_field(resource, 'restrict_access')
     if not fields or 'admin' in g.user['roles']: return #admins can read anything
-    public = app.config['DOMAIN'][resource].get('public', None)
 
     #restrict results to only those the user is allowed to read
-    lookup['$or'] = [{public: 'public'}] if public else []
+    lookup['$or'] = []
     for field in fields:
         lookup['$or'].extend([
             {field: {"$elemMatch": {"$in": [g.user['email'], g.user['_id'], 'public']}}},

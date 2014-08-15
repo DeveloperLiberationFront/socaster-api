@@ -36,7 +36,10 @@ users = {
         },
         'roles': {
             'type':'list',
-            'items': [{'type': 'string', 'allowed': ['admin', 'user']}]
+            'schema': {
+                'type': 'string',
+                'allowed': ['admin', 'user']
+            }
         },
         'auth_hash': { 'type': 'string' }
     }

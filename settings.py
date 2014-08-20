@@ -225,10 +225,6 @@ ratings = {
     'restrict_update': 'user',
     'creator': 'user',
     'unique': ['user', 'clip'],
-    'additional_lookup': { #allow alternate lookup by email
-        'url': 'regex("[\w]+")',
-        'field': 'clip'
-    },
     'schema': {
         'clip': {
             'type': 'objectid',

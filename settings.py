@@ -364,6 +364,7 @@ DOMAIN = {
     'tools': tools,
     'usages': usages,
     'notifications': notifications,
+    'clip_ratings' : clip_ratings,
     'clips': clips,
     'ratings': ratings,
     'images': images,

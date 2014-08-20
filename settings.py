@@ -156,6 +156,20 @@ notifications = {
     }
 }
 
+clip_ratings = {
+    'restrict_update': 'user',
+    'schema' : {
+        'rating' : {'type' : 'integer'},
+        'clip_id' : {'type' : 'objectid'},
+        'user' : {
+            'type': 'string', 
+            'data_relation': {
+                'resource': 'users',
+                'field': 'email',
+            }}
+        }
+}
+
 clips = {
     'creator': 'user', #store the creating user's email in the 'user' field
     'restrict_update': 'user', #only the creator can update/delete the clip
@@ -179,6 +193,14 @@ clips = {
             'data_relation': {
                 'resource': 'tools',
                 'field': '_id',
+                'embeddable': True
+            }
+        },
+        'ratings' : {
+            'type' : 'objectid',
+            'data_relation' : {
+                'resource' : 'clip_ratings',
+                'field' : 'clip_id',
                 'embeddable': True
             }
         },

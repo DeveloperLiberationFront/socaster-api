@@ -27,9 +27,11 @@ from validator import Validator
 from auth import SocasterAuth
 
 #set up logging for tornado + copy logs to mongo
+import logging
 options.logging = 'debug'
 options.log_to_stderr = True
 options.parse_command_line()
+logger = logging.getLogger('tornado.access')
 
 # Mongo logging
 # import logging
@@ -65,8 +67,9 @@ def restrict_update(resource, item, original=None):
 
     found = False
     for field in fields:
+        logger.debug(field)
         value = original[field] if original else item[field]
-        if (isinstance(value, list) and g.user['email'] in value or g.user['_id'] in value) \
+        if (isinstance(value, list) and (g.user['email'] in value or g.user['_id'] in value)) \
            or g.user['email'] == value or g.user["_id"] == value:
             found = True
 
@@ -88,7 +91,6 @@ def prevent_escalation(item, original=None):
         abort(403, 'You do not have permission to set roles')
 
 def require_admin(*args):
-    print args
     if 'admin' not in g.user['roles']:
         abort(403, 'This action requires admin privileges')
 
@@ -224,9 +226,11 @@ if __name__ == '__main__':
     app.on_delete_resource += require_admin
 
     app.on_pre_GET += restrict_access
+
     app.on_replace += restrict_update
     app.on_update += restrict_update
     app.on_delete_item += restrict_update
+
     app.on_insert += set_creator
 
     app.on_update += multi_unique

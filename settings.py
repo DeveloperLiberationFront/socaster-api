@@ -156,20 +156,6 @@ notifications = {
     }
 }
 
-clip_ratings = {
-    'restrict_update': 'user',
-    'schema' : {
-        'rating' : {'type' : 'integer'},
-        'clip_id' : {'type' : 'objectid'},
-        'user' : {
-            'type': 'string', 
-            'data_relation': {
-                'resource': 'users',
-                'field': 'email',
-            }}
-        }
-}
-
 clips = {
     'creator': 'user', #store the creating user's email in the 'user' field
     'restrict_update': 'user', #only the creator can update/delete the clip
@@ -193,14 +179,6 @@ clips = {
             'data_relation': {
                 'resource': 'tools',
                 'field': '_id',
-                'embeddable': True
-            }
-        },
-        'ratings' : {
-            'type' : 'objectid',
-            'data_relation' : {
-                'resource' : 'clip_ratings',
-                'field' : 'clip_id',
                 'embeddable': True
             }
         },
@@ -247,12 +225,17 @@ ratings = {
     'restrict_update': 'user',
     'creator': 'user',
     'unique': ['user', 'clip'],
+    'additional_lookup': { #allow alternate lookup by email
+        'url': 'regex("[\w]+")',
+        'field': 'clip'
+    },
     'schema': {
         'clip': {
             'type': 'objectid',
             'data_relation': {
                 'resource': 'clips',
                 'field': '_id',
+                'embeddable' : 'true'
             },
         },
         'user': {
@@ -364,7 +347,6 @@ DOMAIN = {
     'tools': tools,
     'usages': usages,
     'notifications': notifications,
-    'clip_ratings' : clip_ratings,
     'clips': clips,
     'ratings': ratings,
     'images': images,

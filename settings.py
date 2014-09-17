@@ -245,30 +245,6 @@ ratings = {
     }
 }
 
-image = {
-    'embeddable': False,
-    'restrict_update': 'user',
-    'creator': 'user',
-    'schema': {
-        'name': {'type': 'string'},
-        'data': {'type': 'media'},
-        'clip': {
-            'type': 'objectid',
-            'data_relation': {
-                'resource': 'clips',
-                'field': '_id',
-            },
-        },
-        'user': {
-            'type': 'string',
-            'data_relation': {
-                'resource': 'users',
-                'field': 'email',
-            }
-        },
-    }
-}
-
 images = {
     'url': 'clips/<regex("[a-f0-9]{24}"):clip>/images',
     'additional_lookup': {
@@ -280,13 +256,7 @@ images = {
     'creator': 'user',
     'schema': {
         'name': {'type': 'string'},
-        'data': {
-            'type': 'objectid',
-            'data_relation': {
-                'resource': 'image',
-                'field': '_id',
-            },
-        },
+        'data': {'type': 'media'},
         'clip': {
             'type': 'objectid',
             'data_relation': {

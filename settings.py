@@ -251,7 +251,7 @@ images = {
         'url': 'regex("[\w@.+]+")',
         'field': 'name'
     },
-    'embeddable': True,
+    'embeddable': False,
     'restrict_update': 'user',
     'creator': 'user',
     'schema': {

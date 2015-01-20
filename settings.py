@@ -278,7 +278,7 @@ events = {
     'schema': {
         'application': { 'type': 'string' },
         'tool': { 'type': 'string' },
-
+		'other': {'type' : 'string', 'default': ''},
         #Remaining fields match UBC Recommender requirements
         "user_id" : {
             'type': 'string',

@@ -276,8 +276,8 @@ images = {
 
 events = {
     'schema': {
-        'application': { 'type': 'string' },
-        'tool': { 'type': 'string' },
+        'application': { 'type': 'string', 'required' :'True' },
+        'tool': { 'type': 'string', 'required' :'True' },
 		'other': {'type' : 'string', 'default': ''},
         #Remaining fields match UBC Recommender requirements
         "user_id" : {

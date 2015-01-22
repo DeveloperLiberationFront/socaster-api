@@ -151,7 +151,7 @@ notifications = {
                 'embeddable': True,
             },
         },
-        'type': { 'type': 'string' },
+        'notification_type': { 'type': 'string' },
         'notification_status': { 'type': 'string', 'default': "new" }
     }
 }

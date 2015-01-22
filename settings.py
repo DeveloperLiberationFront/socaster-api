@@ -152,7 +152,7 @@ notifications = {
             },
         },
         'type': { 'type': 'string' },
-        'status': { 'type': 'string' }
+        'notification_status': { 'type': 'string', 'default': "new" }
     }
 }
 

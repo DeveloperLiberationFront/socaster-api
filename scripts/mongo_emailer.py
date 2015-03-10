@@ -9,7 +9,7 @@ with open('passwordFile.json','r') as f:
 
 
 client = MongoClient()
-client.socaster.authenticate(passwords.mongo_user,passwords.mongo_pw)
+client.socaster.authenticate(passwords['mongo_user'],['passwords.mongo_pw'])
 db = client.socaster
 
 reducer = Code("""
@@ -26,13 +26,13 @@ for user in db.users.find():
     msg = msg+user.name+"\n"
     msg = msg+user.user_id+"\n"
     events = db.events.group(key={ "application": 1, "tool" : 1 }, condition={"user_id": user.user_id, "time":{"$gt": yesterday} }, reduce=reducer,initial={ "count": 0 })
-    for event in events
+    for event in events:
         msg = msg + event
 
 
 server = smtplib.SMTP('smtp.gmail.com:587')
 server.ehlo()
 server.starttls()
-server.login(passwords.email_username,passwords.email_pw)
-server.sendmail(passwords.email_username, passwords.my_email, msg)
+server.login(passwords['email_username'],passwords['email_pw'])
+server.sendmail(passwords['email_username'], passwords['my_email'], msg)
 server.quit()

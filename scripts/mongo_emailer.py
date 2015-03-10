@@ -22,13 +22,18 @@ function(cur, result) {
 msg = "Usages in the last 24 hours:\n"
 
 yesterday = datetime.now() - timedelta(days=1)
-print yesterday
+
+# from http://stackoverflow.com/a/11111177/1447621
+epoch = datetime.utcfromtimestamp(0)
+delta = yesterday - epoch
+yesterday_millis = 1000 * (delta.days*86400+delta.seconds)
+print yesterday_millis
 
 for user in db.users.find():
     if ('user_id' in user.keys()):
         msg = msg+user.get('name','BLANK')+"\n"
         msg = msg+user.get('user_id')+"\n"
-        events = db.events.group(key={ "application": 1, "tool" : 1 }, condition={"user_id": user['user_id'], "time":{"$gt": yesterday} }, reduce=reducer,initial={ "count": 0 })
+        events = db.events.group(key={ "application": 1, "tool" : 1 }, condition={"user_id": user['user_id'], "time":{"$gt": yesterday_millis} }, reduce=reducer,initial={ "count": 0 })
         for event in events:
             msg = msg + event
 

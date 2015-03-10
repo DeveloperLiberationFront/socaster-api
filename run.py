@@ -115,8 +115,8 @@ def insert_events(items):
     for item in items:
         tool = db.tools.find_one({'name': item['tool'], 'application': item['application']})
         if not tool: 
-			db.tools.insert({application:item['application'], name:item['tool'],users:[]})
-			tool = db.tools.find_one({'name': item['tool'], 'application': item['application']})
+            db.tools.insert({'application':item['application'], 'name':item['tool'],'users':[]})
+            tool = db.tools.find_one({'name': item['tool'], 'application': item['application']})
 
         item['description'] = tool['_id']
         item['user_id'] = g.user['email']

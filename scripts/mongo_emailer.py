@@ -2,6 +2,7 @@ import pymongo, json, smtplib
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from bson.code import Code
+from email.mime.text import MIMEText
 
 passwords = {}
 
@@ -19,9 +20,9 @@ function(cur, result) {
 }
 """)
 
-msg = "Usages in the last 24 hours:\n"
 
 yesterday = datetime.now() - timedelta(days=1)
+msg = "Usages since "+str(yesterday)+"\n"
 
 # from http://stackoverflow.com/a/11111177/1447621
 epoch = datetime.utcfromtimestamp(0)
@@ -35,7 +36,8 @@ for user in db.users.find():
         msg = msg+user.get('user_id')+"\n"
         events = db.events.group(key={ "application": 1, "tool" : 1 }, condition={"user_id": user['user_id'], "time":{"$gt": yesterday_millis} }, reduce=reducer,initial={ "count": 0 })
         for event in events:
-            msg = msg + event
+            msg = msg + json.dumps(event) +"\n"
+        msg = msg + "\n"
 
 print msg
 
@@ -43,5 +45,11 @@ server = smtplib.SMTP('smtp.gmail.com:587')
 server.ehlo()
 server.starttls()
 server.login(passwords['email_username'],passwords['email_pw'])
-server.sendmail(passwords['email_username'], passwords['my_email'], msg)
+
+message = MIMEText(msg)
+message['Subject'] = "Daily Socaster Update"
+message['To'] = "Experiment Master"
+message['From'] = "Automated Machine"
+
+server.sendmail(passwords['email_username'], passwords['my_email'], message.as_string())
 server.quit()

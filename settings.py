@@ -211,12 +211,7 @@ clips = {
             },
         },
         'thumbnail': { 
-            'type': 'objectid',
-            'data_relation': {
-                'resource': 'images',
-                'field': '_id',
-                'embeddable': True,
-            },
+            'type': 'string'
         }
     }
 }

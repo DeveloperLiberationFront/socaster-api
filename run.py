@@ -53,7 +53,9 @@ def restrict_access(resource, request, lookup):
     fields = get_list_field(resource, 'restrict_access')
     if not fields or 'admin' in g.user['roles']: return #admins can read anything
 
-    #restrict results to only those the user is allowed to read
+    # filters out results that don't match one of the 6 conditions for each
+    # field. The field named by 'restrict_access' (usually the "user" field)
+    # must match the logged in user's email or id, or be set to "public"
     lookup['$or'] = []
     for field in fields:
         lookup['$or'].extend([

@@ -1,0 +1,26 @@
+sudo: required
+dist: trusty
+language: python
+python:
+ - "2.7"
+# Install mongo 2.6
+before_install:
+ - "sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10"
+ - "echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list"
+ - "sudo apt-get update"
+ - "sudo apt-get install mongodb-org-server mongodb-org-shell mongodb-org-tools"
+# Install python dependencies
+install:
+ - pip install --upgrade pip
+ - pip install -r requirements.txt
+# Wait for mongo to start, and then create the socaster user "eve"
+before_script: |
+    until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
+    mongo socaster --eval 'db.createUser({"user": "eve", "roles": [{"role": "userAdmin", "db": "socaster"},{"role": "dbAdmin", "db": "socaster"},{"role": "readWrite", "db": "socaster"}], pwd: "api service access"})'
+
+# Run the server and the tests
+script: python run_server_and_tests.py
+
+# Delete these lines to get email alerts when a build fails.
+notifications:
+  email: false

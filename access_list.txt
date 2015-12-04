@@ -1,0 +1,8 @@
+# This is an access list of email addresses that are allowed to access the api.
+# Comments start with a #
+# Globbing is supported
+
+# Allow all. Delete the following line to enable the access list
+*
+
+*@ncsu.edu
